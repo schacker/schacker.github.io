@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>菜鸟的逆袭</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="菜鸟的逆袭">
+<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:site_name" content="菜鸟的逆袭">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="菜鸟的逆袭">
+  
+    <link rel="alternate" href="/atom.xml" title="菜鸟的逆袭" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">菜鸟的逆袭</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Suche"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main">
+  
+    <article id="post-20180308-PWA" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/03/08/20180308-PWA/" class="article-date">
+  <time datetime="2018-03-08T06:26:10.000Z" itemprop="datePublished">2018-03-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/03/08/20180308-PWA/">20180308_PWA</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="PWA初级"><a href="#PWA初级" class="headerlink" title="PWA初级"></a>PWA初级</h1><h2 id="what-is-pwa"><a href="#what-is-pwa" class="headerlink" title="what is pwa ?"></a>what is pwa ?</h2><ul>
+<li>PWA，全称Progressive Web Apps是Google提出的用前沿的Web技术为网页提供APP般使用体验的一系列方案。</li>
+</ul>
+<h2 id="prepare"><a href="#prepare" class="headerlink" title="prepare"></a>prepare</h2><ul>
+<li><p>首先准备好http-server、ngrok</p>
+</li>
+<li><p>需要的基础html及css</p>
+</li>
+<li><p>manifest.json文件</p>
+</li>
+</ul>
+<h2 id="manifest-json"><a href="#manifest-json" class="headerlink" title="manifest.json"></a>manifest.json</h2><ul>
+<li>该文件主要是让PWA应用呗添加到主屏幕时，定义应用的名称，图标icon等信息</li>
+</ul>
+<h2 id="showtime😋"><a href="#showtime😋" class="headerlink" title="showtime😋"></a>showtime😋</h2><p>我们添加必要的html代码和引入css、manifest.json，然后加入index.js来注册serviceWorker。<br><a href="">https://www.w3.org/TR/service-workers-1/</a></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">if (navigator.serviceWorker != null) &#123;</span><br><span class="line">		navigator.serviceWorker.register(&apos;sw.js&apos;)</span><br><span class="line">			.then(function(registration) &#123;</span><br><span class="line">				console.log(&apos;Registered events at scope: &apos;, registration.scope);</span><br><span class="line">			&#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">在serviceWorker中会用到一些全局变量：</span><br><span class="line">&gt;self:表示Service Worker作用域，也是全局变量</span><br><span class="line"></span><br><span class="line">&gt;caches:表示缓存</span><br><span class="line"></span><br><span class="line">&gt;skipWaiting：表示强制当前处在waiting状态的脚本进入activate状态</span><br><span class="line"></span><br><span class="line">&gt;clients:表示Service Worker接管的页面</span><br></pre></td></tr></table></figure>
+<h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><h4 id="定义缓存"><a href="#定义缓存" class="headerlink" title="定义缓存"></a>定义缓存</h4><p>var cacheStorageKey = ‘minimal-pwa-1’ //cache-key<br>var cacheList = [  //cache-list<br>    ‘/‘,<br>    “index.html”,<br>    “index.css”,<br>    “./image/clear.png”<br>]</p>
+<h4 id="借助Service-Worker写缓存"><a href="#借助Service-Worker写缓存" class="headerlink" title="借助Service Worker写缓存"></a>借助Service Worker写缓存</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(&apos;install&apos;, function(e) &#123;</span><br><span class="line">	e.waitUntil(</span><br><span class="line">		caches.open(cacheStorageKey).then(function(cache) &#123;</span><br><span class="line">			return cache.addAll(cacheList)</span><br><span class="line">		&#125;).then(function() &#123;</span><br><span class="line">			return self.skipWaiting()</span><br><span class="line">		&#125;)</span><br><span class="line">	)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">调用self.skipWaiting()可以在页面更新过程中，新的Service Worker脚本能立即激活和生效</span><br><span class="line">#### 动态缓存</span><br><span class="line">网页抓取资源过程中，在Service Worker可以捕获fetch事件，可以自定义资源的响应请求</span><br></pre></td></tr></table></figure>
+<p>self.addEventListener(‘fetch’, function(e) {<br>    e.respondWith(<br>        caches.match(e.request).then(function(response) {<br>            if (response != null) {<br>                return response<br>            }<br>            return fetch(e.request.url)<br>        })<br>    )<br>})</p>
+<p>例：我们可以通过fetch事件来处理获取资源异常的case，从而增强程序完整性和健壮性、可用性</p>
+<h4 id="更新静态资源"><a href="#更新静态资源" class="headerlink" title="更新静态资源"></a>更新静态资源</h4><p>缓存的资源随着版本的更新会过期，所以会根据缓存的字符串名称清除旧缓存<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(&apos;activate&apos;, function(e) &#123;</span><br><span class="line">	e.waitUntil(</span><br><span class="line">		caches.keys().then(function(keyList)&#123;</span><br><span class="line">			return Promise.all(keyList.map(function(key)&#123;</span><br><span class="line">				if (key !== cacheStorageKey) &#123;</span><br><span class="line">					return caches.delete(key)</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;))</span><br><span class="line">		&#125;)</span><br><span class="line">	)</span><br><span class="line">	return self.clients.claim()</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">在新安装的Service Worker中通过调用self.clients.claim()取得页面的控制权，保证使用最新缓存。旧sw脚本也会停止。</span><br><span class="line">确保在每次修改了 service worker 后修改 cacheName，这能确保你永远能够从缓存中获得到最新版本的文件。过一段时间清理一下缓存删除掉没用的数据也是很重要的。</span><br><span class="line"></span><br><span class="line">## 我就想看看它长什么样子？😏</span><br></pre></td></tr></table></figure></p>
+<p>http-server -c-1<br>ngrok http 8080</p>
+<p>浏览器打开<a href="http://localhost:8080" target="_blank" rel="noopener">http://localhost:8080</a></p>
+<h2 id="页面更新"><a href="#页面更新" class="headerlink" title="页面更新"></a>页面更新</h2><p>页面被缓存之后，需要适当处理缓存失败时页面失效的更新。被缓存的资源是无法发起请求来判断是否被更新了，只有sw.js会自动根据http缓存机制尝试去判断应用是否被更新。<br>所以页面发生修改时，要同步修改sw.js文件，保证缓存名称也修改了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;h3&gt;Revision 2&lt;/h3&gt;</span><br><span class="line">let cacheStorageKey = &apos;minimal-pwa-2&apos;</span><br><span class="line"></span><br><span class="line">然后重新打开页面，这个时候渲染的页面依然是旧的，不过从devtools里看到sw.js被安装和激活。之后再次打开可以网页版本为2</span><br><span class="line"># PWA进阶版本</span><br><span class="line">何为进阶版本，那就是看起来比较牛逼的版本。</span><br><span class="line">## App Shell</span><br><span class="line">#### 从缓存中加载app shell</span><br><span class="line">*Service workers 可以截获 Progressive Web App 发起的请求并从缓存中返回响应。这意味着我们能够 决定如何来处理这些请求，以及决定哪些网络响应能够成为我们的缓存。</span><br><span class="line"></span><br><span class="line">*从内至外，caches.match() 从网络请求触发的 fetch 事件中得到请求内容，并判断请求的资源是 否存在于缓存中。然后以缓存中的内容作为响应，或者使用 fetch 函数来加载资源（如果缓存中没有该资源）。 response 最后通过 e.respondWith() 返回给 Web 页面。</span><br><span class="line"></span><br><span class="line">## Push</span><br><span class="line">😋Push API提供Web应用消息推送能力，需要获取用户权限。</span><br><span class="line">#### 第一种姿势-本地模拟</span><br></pre></td></tr></table></figure></p>
+<p>default: unknown<br>granted:已授权<br>    let notification = new Notification({})<br>denied：未授权<br>    Notification.permission === ‘default’ || Notification.permission !== ‘denied’<br>    Notification.requestPermission(permission =&gt; {<br>        permission === ‘granted’ &amp;&amp; (let notification = new Notification({}))<br>    })<br><code>`</code><br><a href="">https://developer.mozilla.org/en-US/docs/Web/API/Notification/permission</a></p>
+<h4 id="第二种姿势-firebase-😌鉴权登录有毒啊啊啊啊啊"><a href="#第二种姿势-firebase-😌鉴权登录有毒啊啊啊啊啊" class="headerlink" title="第二种姿势-firebase 😌鉴权登录有毒啊啊啊啊啊"></a>第二种姿势-firebase 😌鉴权登录有毒啊啊啊啊啊</h4><p><a href="">https://console.firebase.google.com/project/schacker-pwa/notification</a><br><a href="">https://developers.google.com/web/fundamentals/engage-and-retain/push-notifications/subscribing-a-user</a></p>
+<p>对于 Push Notification，一是因为 Push API 还处于 Editor Draft 的状态，二是目前浏览器与推送服务的互相支持都还不够成熟：Android 上的 Chrome（与其它基于 Blink 的浏览器）目前只支持基于 Google 私有的 GCM/FCM 的通知推送，只有 Firefox 已经实现了成在由 IETF 进行标准化的 Web 推送协议（Web Push Protocol）。</p>
+<p>不过，如果你已经在使用 Google 的云服务（比如 Firebase），并且主要面向的是海外用户，那么在 Web 应用上支持基于 GCM/FCM 的推送通知并不是一件费力的事情。<br>对于<br>对于firebase推送这块，可以自己搭建服务器来调用Google SDK提供的API接口实现自定义推送，包括自己的推送后台</p>
+<p><a href="">https://developers.google.com/web/fundamentals/engage-and-retain/push-notifications/sending-messages-with-web-push-libraries</a></p>
+<h2 id="有待挖掘"><a href="#有待挖掘" class="headerlink" title="有待挖掘"></a>有待挖掘</h2><p>使用技术 ep:<br>Ajax、响应式设计、JavaScript 框架、ECMAScript Next、CSS Next、Houdini、Indexed DB、Device APIs、Web Bluetooth、Web Socket、Web Payment、孵化中的 Background Sync API、Streams、WebVR</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/03/08/20180308-PWA/" data-id="cjei4slxr0000ni371jt6rcqn" class="article-share-link">Teilen</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/03/08/hello-world/" class="article-date">
+  <time datetime="2018-03-08T06:16:18.725Z" itemprop="datePublished">2018-03-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/03/08/hello-world/">Hello World</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2018/03/08/hello-world/" data-id="cjei4slxw0001ni372sq7nyw1" class="article-share-link">Teilen</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archiv</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">letzter Beitrag</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/03/08/20180308-PWA/">20180308_PWA</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/08/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 schacker<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
