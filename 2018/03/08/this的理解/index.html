@@ -79,16 +79,16 @@
 
 
 
-<meta name="description" content="分析一段代码的创建执行过程123456789var y = 10;function test()&amp;#123;    var y = 2;    return function()&amp;#123;        alert(y);    &amp;#125;&amp;#125;var fun = test();fun(); 对于上述代码的执行过程:在执行全局代码前，创建全局上下文即：12345globalEC = &amp;#">
+<meta name="description" content="this没有明确的定义，也就意味着this是在运行时确定的，不是在定义时确定的。 误解1：指向函数自身，看上去很合理。常用的递归，在函数内部调用自己活是一个在第一次被调用时会解除自己绑定的事件处理器。1234567891011function foo(num)&amp;#123;	console.log(“foo:”+ num);	this.count++;&amp;#125;foo.count = 0;for">
 <meta property="og:type" content="article">
-<meta property="og:title" content="js引擎执行过程">
-<meta property="og:url" content="http://yoursite.com/2018/03/08/js引擎执行过程/index.html">
+<meta property="og:title" content="this的理解">
+<meta property="og:url" content="http://yoursite.com/2018/03/08/this的理解/index.html">
 <meta property="og:site_name" content="菜鸟的逆袭">
-<meta property="og:description" content="分析一段代码的创建执行过程123456789var y = 10;function test()&amp;#123;    var y = 2;    return function()&amp;#123;        alert(y);    &amp;#125;&amp;#125;var fun = test();fun(); 对于上述代码的执行过程:在执行全局代码前，创建全局上下文即：12345globalEC = &amp;#">
-<meta property="og:updated_time" content="2018-03-08T13:05:25.948Z">
+<meta property="og:description" content="this没有明确的定义，也就意味着this是在运行时确定的，不是在定义时确定的。 误解1：指向函数自身，看上去很合理。常用的递归，在函数内部调用自己活是一个在第一次被调用时会解除自己绑定的事件处理器。1234567891011function foo(num)&amp;#123;	console.log(“foo:”+ num);	this.count++;&amp;#125;foo.count = 0;for">
+<meta property="og:updated_time" content="2018-03-08T13:31:10.770Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="js引擎执行过程">
-<meta name="twitter:description" content="分析一段代码的创建执行过程123456789var y = 10;function test()&amp;#123;    var y = 2;    return function()&amp;#123;        alert(y);    &amp;#125;&amp;#125;var fun = test();fun(); 对于上述代码的执行过程:在执行全局代码前，创建全局上下文即：12345globalEC = &amp;#">
+<meta name="twitter:title" content="this的理解">
+<meta name="twitter:description" content="this没有明确的定义，也就意味着this是在运行时确定的，不是在定义时确定的。 误解1：指向函数自身，看上去很合理。常用的递归，在函数内部调用自己活是一个在第一次被调用时会解除自己绑定的事件处理器。1234567891011function foo(num)&amp;#123;	console.log(“foo:”+ num);	this.count++;&amp;#125;foo.count = 0;for">
 
 
 
@@ -118,13 +118,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/03/08/js引擎执行过程/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/03/08/this的理解/"/>
 
 
 
 
 
-  <title>js引擎执行过程 | 菜鸟的逆袭</title>
+  <title>this的理解 | 菜鸟的逆袭</title>
   
 
 
@@ -231,7 +231,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/08/js引擎执行过程/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/08/this的理解/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="schacker">
@@ -248,7 +248,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">js引擎执行过程</h1>
+          <h1 class="post-title" itemprop="name headline">this的理解</h1>
         
 
         <div class="post-meta">
@@ -260,7 +260,7 @@
               
                 <span class="post-meta-item-text">Veröffentlicht am</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:00:18+08:00">
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:28:56+08:00">
                 2018-03-08
               </time>
             
@@ -298,18 +298,11 @@
       
 
       
-        <h2 id="分析一段代码的创建执行过程"><a href="#分析一段代码的创建执行过程" class="headerlink" title="分析一段代码的创建执行过程"></a>分析一段代码的创建执行过程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">var y = 10;</span><br><span class="line">function test()&#123;</span><br><span class="line">    var y = 2;</span><br><span class="line">    return function()&#123;</span><br><span class="line">        alert(y);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">var fun = test();</span><br><span class="line">fun();</span><br></pre></td></tr></table></figure>
-<p>对于上述代码的执行过程:<br>在执行全局代码前，创建全局上下文即：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">globalEC = &#123;</span><br><span class="line">    this: window,</span><br><span class="line">    vo: window,</span><br><span class="line">    sc: [winodw]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>注：凡是创建上下文，总会有三个属性，this、vo、sc。<br>接下来进行变量实例化：在变量实例化时所有变量均为undefined，同时会创建test函数（testFun），由于在函数创建时确定函数的scope，<br>而函数的scope为函数创建时所在上下文的作用域链，testFun函数是在全局上下文中创建，所以testFun[[scope]]为globalEC.sc——[window]<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: undefined,</span><br><span class="line">    fun: undefined,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>全局代码执行：<br>首先 var y = 10; window的y属性由undefined变为10<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: 10,</span><br><span class="line">    fun: undefined,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接下来到 var fun = test();<br>执行test函数时，创建test函数的函数上下文即：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">testEC = &#123;</span><br><span class="line">    this: window,</span><br><span class="line">    vo: testAO,</span><br><span class="line">    sc: [testAO, testFun.[[scope]]] = [testAO, window]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>注：函数上下文的作用域链始终包含两个元素，当前激活对象和当前函数的[[scope]]。<br>激活对象就是testAO，而函数的[[scope]]则是当前函数创建时所在的上下文的作用域链，所以testEC的作用域链为[testAO,window]。<br>接下来变量实例化：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">testAO: &#123;</span><br><span class="line">  y: undefined</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>实例化后接着函数代码执行:<br>首先var y = 2;  testAO.y值由undefined 变为 2<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">testAO: &#123;</span><br><span class="line">  y: 2</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接着执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">return function()&#123;        </span><br><span class="line">   alert(y);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>创建匿名函数nFun：上面说到了创建函数的时候回确定函数的[[scope]]，由于它是在test函数中创建的，所以nFun[[scope]] = testEC.sc = [testAO, window]</p>
-<p>执行完fun = test()后，fun由undefined变为nFun<br>全局上下文中的变量对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: 10,</span><br><span class="line">    fun: nFun,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接着执行fun();<br>前面说到了在函数执行之前，会创建函数上下文：它是在test函数中被创建的，所以nFun的作用域链为当前激活对象+test函数的上下文的作用域链。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">nFunEC = &#123;</span><br><span class="line">   this: window,</span><br><span class="line">   vo: nAO,</span><br><span class="line">   sc: [nAO, nFun[[scope]]] = [nAO, testAO, window]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>最后执行alert(y)<br>从nFunEC.sc中查找y<br>在testAO中找到且值为2</p>
+        <p>this没有明确的定义，也就意味着this是在运行时确定的，不是在定义时确定的。</p>
+<h2 id="误解1："><a href="#误解1：" class="headerlink" title="误解1："></a>误解1：</h2><p>指向函数自身，看上去很合理。<br>常用的递归，在函数内部调用自己活是一个在第一次被调用时会解除自己绑定的事件处理器。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">function foo(num)&#123;</span><br><span class="line">	console.log(“foo:”+ num);</span><br><span class="line">	this.count++;</span><br><span class="line">&#125;</span><br><span class="line">foo.count = 0;</span><br><span class="line">for (var i =0;i &lt; 10;i++) &#123;</span><br><span class="line">	if (i &gt; 5) &#123;</span><br><span class="line">		foo(i);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">console.log(foo.count); //0  这TM是怎么回事。。。？</span><br></pre></td></tr></table></figure></p>
+<p>— 解：当代码执行foo.count=0；它确实在函数对象foo中加入了一个count属性，但函数内部this.count，this指向的根本不是函数对象，而是window，那么这个是个什么鬼，那window上的count就是正确的执行次数？不，并不是，这个count是全局变量，而且值是NaN，因为刚刚开始this.count值为undefined，这样加上数字就是NaN。<br>我们可以创建一个对象来持有这个count值。但这是避免了this的问题，这是一个我们便于理解的词法作用域。<br>注意：在函数中有一个老大但现在被废弃了，而arguments.callee引用也指向当前正在执行的函数的内部。这通常是匿名函数在内部自己访问函数对象的唯一方法，但最佳的是完全避免匿名函数。<br>还有一种使用函数对象来执行调用。另一种是强制指向函数对象，call调用就好。</p>
+<h2 id="误解2："><a href="#误解2：" class="headerlink" title="误解2："></a>误解2：</h2><p>this不知怎的指向了函数作用域。这种说法有错有对。<br>明确地说，this不会以任何方式指向函数的此法作用域。作用域好像是一个将所有可用标识符作为属性的对象，从内部看是对的。但JavaScript代码不能访问作用域对象，只是引擎内部实现。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">function foo()&#123;</span><br><span class="line">	var a = 2;</span><br><span class="line">	this.bar();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function() &#123;</span><br><span class="line">	console.log(this.a);</span><br><span class="line">&#125;</span><br><span class="line">foo();</span><br></pre></td></tr></table></figure></p>
+<p>— 执行结果无疑：undefined。<br>中间过程：这个代码不止一个错貌似还阔以执行。<br>首先，试图通过this.bar();来引用bar()函数。他几乎碰巧能够工作，调用bar最自然方式是避开this。代码想通过this来建立foo和bar之间的桥，使用bar可访问foo内部作用域的a。这样的桥是不可能的，使用this在词法作用域中查找东西，这是不可能的。<br>到底啥是this？<br>this不是编写时绑定，而是运行时绑定，依赖函数调用上下文。当函数被调用时，会建立一个活动记录，称为执行上下文环境。包含何处调用，参数等等，属性之一就是this。<br>this实际上是在函数调用时建立的绑定，它指向什么完全由函数被调用的调用点来决定。</p>
 
       
     </div>
@@ -334,8 +327,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/03/08/databinding/" rel="next" title="databinding">
-                <i class="fa fa-chevron-left"></i> databinding
+              <a href="/2018/03/08/js引擎执行过程/" rel="next" title="js引擎执行过程">
+                <i class="fa fa-chevron-left"></i> js引擎执行过程
               </a>
             
           </div>
@@ -343,10 +336,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/08/this的理解/" rel="prev" title="this的理解">
-                this的理解 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -460,7 +449,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#分析一段代码的创建执行过程"><span class="nav-number">1.</span> <span class="nav-text">分析一段代码的创建执行过程</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#误解1："><span class="nav-number">1.</span> <span class="nav-text">误解1：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#误解2："><span class="nav-number">2.</span> <span class="nav-text">误解2：</span></a></li></ol></div>
             
 
           </div>
