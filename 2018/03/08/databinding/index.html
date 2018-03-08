@@ -89,7 +89,7 @@
 <meta property="og:image" content="https://cloud.githubusercontent.com/assets/5880320/18007447/b4967b50-6bd6-11e6-8f35-f13753e1b342.PNG">
 <meta property="og:image" content="https://cloud.githubusercontent.com/assets/5880320/18007451/b64c3728-6bd6-11e6-825d-b4940628c4fb.PNG">
 <meta property="og:image" content="https://cloud.githubusercontent.com/assets/5880320/18007450/b5b06a00-6bd6-11e6-8d2a-ab4933472736.PNG">
-<meta property="og:updated_time" content="2018-03-08T06:56:28.233Z">
+<meta property="og:updated_time" content="2018-03-08T13:22:50.342Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="databinding">
 <meta name="twitter:description" content="很多的前端框架都支持数据双向绑定了，最近正好在看双向绑定的实现，就用Javascript写了几个简单的例子。 几个例子中尝试使用了下面的方式实现双向绑定：  发布/订阅模式 属性劫持 脏数据检测  发布/订阅模式实现数据双向绑定最直接的方式就是使用PubSub模式：  当model发生改变的时候，触发Model change事件，然后通过响应的事件处理函数更新界面 当界面更新的时候，触发UI ch">
@@ -189,7 +189,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Accueil
           </a>
         </li>
       
@@ -199,7 +199,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -263,7 +263,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posté le</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T14:55:14+08:00">
                 2018-03-08
@@ -479,6 +479,10 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2018/03/08/js引擎执行过程/" rel="prev" title="js引擎执行过程">
+                js引擎执行过程 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -531,10 +535,10 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Inhaltsverzeichnis
+            Table Des Matières
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Übersicht
+            Ensemble
           </li>
         </ul>
       
@@ -554,8 +558,8 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">2</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-name">articles</span>
                 </a>
               </div>
             
@@ -621,7 +625,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
@@ -629,7 +633,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
 
 
 
-  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+  <div class="theme-info">Thème &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
 
 
 
