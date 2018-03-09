@@ -79,16 +79,16 @@
 
 
 
-<meta name="description" content="分析一段代码的创建执行过程123456789var y = 10;function test()&amp;#123;    var y = 2;    return function()&amp;#123;        alert(y);    &amp;#125;&amp;#125;var fun = test();fun(); 对于上述代码的执行过程:在执行全局代码前，创建全局上下文即：12345globalEC = &amp;#">
+<meta name="description" content="一道多数人都会错的前端面试题123456789101112131415161718function Foo()&amp;#123;    this.b = 10    getName = function() &amp;#123;        console.log(1)    &amp;#125;&amp;#125;Foo.getName = function() &amp;#123;    console.log(2)&amp;#125;">
 <meta property="og:type" content="article">
-<meta property="og:title" content="js引擎执行过程">
-<meta property="og:url" content="http://yoursite.com/2018/03/08/js引擎执行过程/index.html">
+<meta property="og:title" content="很多人都会错的面试题">
+<meta property="og:url" content="http://yoursite.com/2018/03/09/很多人都会错的面试题/index.html">
 <meta property="og:site_name" content="菜鸟的逆袭">
-<meta property="og:description" content="分析一段代码的创建执行过程123456789var y = 10;function test()&amp;#123;    var y = 2;    return function()&amp;#123;        alert(y);    &amp;#125;&amp;#125;var fun = test();fun(); 对于上述代码的执行过程:在执行全局代码前，创建全局上下文即：12345globalEC = &amp;#">
-<meta property="og:updated_time" content="2018-03-08T13:05:25.948Z">
+<meta property="og:description" content="一道多数人都会错的前端面试题123456789101112131415161718function Foo()&amp;#123;    this.b = 10    getName = function() &amp;#123;        console.log(1)    &amp;#125;&amp;#125;Foo.getName = function() &amp;#123;    console.log(2)&amp;#125;">
+<meta property="og:updated_time" content="2018-03-09T08:39:56.053Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="js引擎执行过程">
-<meta name="twitter:description" content="分析一段代码的创建执行过程123456789var y = 10;function test()&amp;#123;    var y = 2;    return function()&amp;#123;        alert(y);    &amp;#125;&amp;#125;var fun = test();fun(); 对于上述代码的执行过程:在执行全局代码前，创建全局上下文即：12345globalEC = &amp;#">
+<meta name="twitter:title" content="很多人都会错的面试题">
+<meta name="twitter:description" content="一道多数人都会错的前端面试题123456789101112131415161718function Foo()&amp;#123;    this.b = 10    getName = function() &amp;#123;        console.log(1)    &amp;#125;&amp;#125;Foo.getName = function() &amp;#123;    console.log(2)&amp;#125;">
 
 
 
@@ -118,13 +118,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2018/03/08/js引擎执行过程/"/>
+  <link rel="canonical" href="http://yoursite.com/2018/03/09/很多人都会错的面试题/"/>
 
 
 
 
 
-  <title>js引擎执行过程 | 菜鸟的逆袭</title>
+  <title>很多人都会错的面试题 | 菜鸟的逆袭</title>
   
 
 
@@ -231,7 +231,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/08/js引擎执行过程/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/09/很多人都会错的面试题/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="schacker">
@@ -248,7 +248,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">js引擎执行过程</h1>
+          <h1 class="post-title" itemprop="name headline">很多人都会错的面试题</h1>
         
 
         <div class="post-meta">
@@ -260,8 +260,8 @@
               
                 <span class="post-meta-item-text">Veröffentlicht am</span>
               
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:00:18+08:00">
-                2018-03-08
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-09T11:06:51+08:00">
+                2018-03-09
               </time>
             
 
@@ -298,18 +298,28 @@
       
 
       
-        <h2 id="分析一段代码的创建执行过程"><a href="#分析一段代码的创建执行过程" class="headerlink" title="分析一段代码的创建执行过程"></a>分析一段代码的创建执行过程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">var y = 10;</span><br><span class="line">function test()&#123;</span><br><span class="line">    var y = 2;</span><br><span class="line">    return function()&#123;</span><br><span class="line">        alert(y);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">var fun = test();</span><br><span class="line">fun();</span><br></pre></td></tr></table></figure>
-<p>对于上述代码的执行过程:<br>在执行全局代码前，创建全局上下文即：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">globalEC = &#123;</span><br><span class="line">    this: window,</span><br><span class="line">    vo: window,</span><br><span class="line">    sc: [winodw]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>注：凡是创建上下文，总会有三个属性，this、vo、sc。<br>接下来进行变量实例化：在变量实例化时所有变量均为undefined，同时会创建test函数（testFun），由于在函数创建时确定函数的scope，<br>而函数的scope为函数创建时所在上下文的作用域链，testFun函数是在全局上下文中创建，所以testFun[[scope]]为globalEC.sc——[window]<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: undefined,</span><br><span class="line">    fun: undefined,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>全局代码执行：<br>首先 var y = 10; window的y属性由undefined变为10<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: 10,</span><br><span class="line">    fun: undefined,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接下来到 var fun = test();<br>执行test函数时，创建test函数的函数上下文即：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">testEC = &#123;</span><br><span class="line">    this: window,</span><br><span class="line">    vo: testAO,</span><br><span class="line">    sc: [testAO, testFun.[[scope]]] = [testAO, window]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>注：函数上下文的作用域链始终包含两个元素，当前激活对象和当前函数的[[scope]]。<br>激活对象就是testAO，而函数的[[scope]]则是当前函数创建时所在的上下文的作用域链，所以testEC的作用域链为[testAO,window]。<br>接下来变量实例化：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">testAO: &#123;</span><br><span class="line">  y: undefined</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>实例化后接着函数代码执行:<br>首先var y = 2;  testAO.y值由undefined 变为 2<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">testAO: &#123;</span><br><span class="line">  y: 2</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接着执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">return function()&#123;        </span><br><span class="line">   alert(y);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>创建匿名函数nFun：上面说到了创建函数的时候回确定函数的[[scope]]，由于它是在test函数中创建的，所以nFun[[scope]] = testEC.sc = [testAO, window]</p>
-<p>执行完fun = test()后，fun由undefined变为nFun<br>全局上下文中的变量对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: 10,</span><br><span class="line">    fun: nFun,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接着执行fun();<br>前面说到了在函数执行之前，会创建函数上下文：它是在test函数中被创建的，所以nFun的作用域链为当前激活对象+test函数的上下文的作用域链。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">nFunEC = &#123;</span><br><span class="line">   this: window,</span><br><span class="line">   vo: nAO,</span><br><span class="line">   sc: [nAO, nFun[[scope]]] = [nAO, testAO, window]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>最后执行alert(y)<br>从nFunEC.sc中查找y<br>在testAO中找到且值为2</p>
+        <h4 id="一道多数人都会错的前端面试题"><a href="#一道多数人都会错的前端面试题" class="headerlink" title="一道多数人都会错的前端面试题"></a>一道多数人都会错的前端面试题</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">function Foo()&#123;</span><br><span class="line">    this.b = 10</span><br><span class="line">    getName = function() &#123;</span><br><span class="line">        console.log(1)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">Foo.getName = function() &#123;</span><br><span class="line">    console.log(2)</span><br><span class="line">&#125;</span><br><span class="line">Foo.prototype.getName = function() &#123;</span><br><span class="line">    console.log(3)</span><br><span class="line">&#125;</span><br><span class="line">Foo.getName()</span><br><span class="line">new Foo.getName()</span><br><span class="line">Foo().b</span><br><span class="line">Foo.b</span><br><span class="line">Foo().getName()</span><br><span class="line">new Foo().getName()</span><br></pre></td></tr></table></figure>
+<h4 id="result"><a href="#result" class="headerlink" title="result"></a>result</h4><ul>
+<li>Foo.getName() //2</li>
+<li>new Foo.getName() //2</li>
+<li>new Foo.getName //2</li>
+<li>Foo().b //Cannot read property ‘b’ of undefined</li>
+<li>Foo.b //undefined</li>
+<li>Foo().getName() //Cannot read property ‘getName’ of undefined</li>
+<li>new Foo().getName() //3</li>
+</ul>
+<h5 id="Foo-getName"><a href="#Foo-getName" class="headerlink" title="Foo.getName()"></a><code>Foo.getName()</code></h5><p>这个很简单就是直接取Foo函数对象上的getName，自然是2</p>
+<h5 id="new-Foo-getName"><a href="#new-Foo-getName" class="headerlink" title="new Foo.getName()"></a><code>new Foo.getName()</code></h5><p>这个其实是new (Foo.getName)()，首先new Foo.getName()执行过程：</p>
+<ul>
+<li>一个继承自 Foo.prototype 的新对象被创建。</li>
+<li>使用指定的参数调用构造函数 Foo ，并将 this 绑定到新创建的对象。new Foo 等同于 new Foo()，也就是没有指定参数列表，Foo 不带任何参数调用的情况。</li>
+<li>由构造函数返回的对象就是 new 表达式的结果。如果构造函数没有显式返回一个对象，则使用步骤1创建的对象。（一般情况下，构造函数不返回值，但是用户可以选择主动返回对象，来覆盖正常的对象创建步骤）</li>
+</ul>
+<h5 id="new-Foo-getName-1"><a href="#new-Foo-getName-1" class="headerlink" title="new Foo.getName"></a><code>new Foo.getName</code></h5><p>同上</p>
+<h5 id="Foo-b"><a href="#Foo-b" class="headerlink" title="Foo().b"></a><code>Foo().b</code></h5><p>Foo()执行后没有任何返回结果</p>
+<h5 id="Foo-b-1"><a href="#Foo-b-1" class="headerlink" title="Foo.b"></a><code>Foo.b</code></h5><p>Foo.b上面是没有对应的b属性，上面函数中对应的this是指向window的<br></p>
+<h5 id="Foo-getName-1"><a href="#Foo-getName-1" class="headerlink" title="Foo().getName()"></a><code>Foo().getName()</code></h5><p>Foo()执行后没有任何返回结果</p>
+<h5 id="new-Foo-getName-2"><a href="#new-Foo-getName-2" class="headerlink" title="new Foo().getName()"></a><code>new Foo().getName()</code></h5><p>new Foo()首先返回Foo类实例对象，然后查找当前对象上的getName函数，没有则上prototype查找</p>
 
       
     </div>
@@ -334,8 +344,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2018/03/08/databinding/" rel="next" title="databinding">
-                <i class="fa fa-chevron-left"></i> databinding
+              <a href="/2018/03/08/this的理解/" rel="next" title="this的理解">
+                <i class="fa fa-chevron-left"></i> this的理解
               </a>
             
           </div>
@@ -343,10 +353,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2018/03/08/this的理解/" rel="prev" title="this的理解">
-                this的理解 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -460,7 +466,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#分析一段代码的创建执行过程"><span class="nav-number">1.</span> <span class="nav-text">分析一段代码的创建执行过程</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#一道多数人都会错的前端面试题"><span class="nav-number">1.</span> <span class="nav-text">一道多数人都会错的前端面试题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#result"><span class="nav-number">2.</span> <span class="nav-text">result</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Foo-getName"><span class="nav-number">2.1.</span> <span class="nav-text">Foo.getName()</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#new-Foo-getName"><span class="nav-number">2.2.</span> <span class="nav-text">new Foo.getName()</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#new-Foo-getName-1"><span class="nav-number">2.3.</span> <span class="nav-text">new Foo.getName</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Foo-b"><span class="nav-number">2.4.</span> <span class="nav-text">Foo().b</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Foo-b-1"><span class="nav-number">2.5.</span> <span class="nav-text">Foo.b</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Foo-getName-1"><span class="nav-number">2.6.</span> <span class="nav-text">Foo().getName()</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#new-Foo-getName-2"><span class="nav-number">2.7.</span> <span class="nav-text">new Foo().getName()</span></a></li></ol></li></ol></div>
             
 
           </div>
