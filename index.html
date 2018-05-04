@@ -181,7 +181,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -191,7 +191,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -214,6 +214,136 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/05/04/koa2中间件原理/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/05/04/koa2中间件原理/" itemprop="url">koa2中间件原理</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-04T11:25:15+08:00">
+                2018-05-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>先举个栗子🌰 </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">const</span> app = &#123;</span><br><span class="line">    middleware: [],</span><br><span class="line">    callback(ctx) &#123; <span class="comment">//最终请求结束调用</span></span><br><span class="line">        <span class="built_in">console</span>.log(ctx)</span><br><span class="line">    &#125;,</span><br><span class="line">    use(fn) &#123;</span><br><span class="line">        <span class="comment">// 逻辑</span></span><br><span class="line">        <span class="keyword">this</span>.middleware.push(fn)</span><br><span class="line">    &#125;,</span><br><span class="line">    start(ctx) &#123;</span><br><span class="line">        <span class="comment">// 逻辑</span></span><br><span class="line">        <span class="keyword">const</span> reducer = <span class="function">(<span class="params">next, fn , i</span>) =&gt;</span> () =&gt; &#123;</span><br><span class="line">            <span class="built_in">console</span>.log(fn, next)</span><br><span class="line">            fn(ctx, next)</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// 从右侧遍历，最后拿到最栈顶的next，并从栈顶到栈尾形成next链</span></span><br><span class="line">        <span class="keyword">const</span> q = <span class="keyword">this</span>.middleware.reduceRight(reducer, <span class="keyword">this</span>.callback.bind(<span class="keyword">this</span>, ctx)) <span class="comment">//没处理异步</span></span><br><span class="line">        <span class="built_in">console</span>.log(q)</span><br><span class="line">        <span class="comment">// 开始执行栈顶</span></span><br><span class="line">        q()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">app.use(<span class="function">(<span class="params">ctx, next</span>) =&gt;</span> &#123;</span><br><span class="line">    ctx.name = <span class="string">'huangwei'</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&gt;&gt; use name'</span>)</span><br><span class="line">    next()</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&lt;&lt; use name'</span>)</span><br><span class="line">&#125;)</span><br><span class="line">app.use(<span class="function">(<span class="params">ctx, next</span>) =&gt;</span> &#123;</span><br><span class="line">    ctx.age = <span class="number">20</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&gt;&gt; use age'</span>)</span><br><span class="line">    next()</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&lt;&lt; use age'</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.use(<span class="function">(<span class="params">ctx, next</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`&gt;&gt; <span class="subst">$&#123;ctx.name&#125;</span> is <span class="subst">$&#123;ctx.age&#125;</span> years old`</span>)</span><br><span class="line">    next()</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`&lt;&lt; <span class="subst">$&#123;ctx.name&#125;</span> is <span class="subst">$&#123;ctx.age&#125;</span> years old`</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.start(&#123;&#125;)</span><br></pre></td></tr></table></figure>
+<p>输出结果：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// q</span></span><br><span class="line">() =&gt; &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(fn, next)</span><br><span class="line">    fn(ctx, next)</span><br><span class="line">&#125;</span><br><span class="line">(ctx, next) =&gt; &#123;</span><br><span class="line">    ctx.name = <span class="string">'huangwei'</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&gt;&gt; use name'</span>)</span><br><span class="line">    next()</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&lt;&lt; use name'</span>)</span><br><span class="line">&#125;</span><br><span class="line">() =&gt; &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(fn, next)</span><br><span class="line">    fn(ctx, next)</span><br><span class="line">&#125;</span><br><span class="line">&gt;&gt; use name</span><br><span class="line"></span><br><span class="line">(ctx, next) =&gt; &#123;</span><br><span class="line">    ctx.age = <span class="number">20</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&gt;&gt; use age'</span>)</span><br><span class="line">    next()</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&lt;&lt; use age'</span>)</span><br><span class="line">&#125;</span><br><span class="line">() =&gt; &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(fn, next)</span><br><span class="line">    fn(ctx, next)</span><br><span class="line">&#125;</span><br><span class="line">&gt;&gt; use age</span><br><span class="line"></span><br><span class="line">(ctx, next) =&gt; &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`&gt;&gt; <span class="subst">$&#123;ctx.name&#125;</span> is <span class="subst">$&#123;ctx.age&#125;</span> years old`</span>)</span><br><span class="line">    next()</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">`&lt;&lt; <span class="subst">$&#123;ctx.name&#125;</span> is <span class="subst">$&#123;ctx.age&#125;</span> years old`</span>)</span><br><span class="line">&#125;</span><br><span class="line">ƒ callback(ctx) &#123; <span class="comment">//最终请求结束调用</span></span><br><span class="line">    <span class="built_in">console</span>.log(ctx)</span><br><span class="line">&#125;</span><br><span class="line">&gt;&gt; huangwei is <span class="number">20</span> years old</span><br><span class="line"></span><br><span class="line">&#123;<span class="attr">name</span>: <span class="string">"huangwei"</span>, <span class="attr">age</span>: <span class="number">20</span>&#125;</span><br><span class="line"></span><br><span class="line">&lt;&lt; huangwei is <span class="number">20</span> years old</span><br><span class="line">&lt;&lt; use age</span><br><span class="line">&lt;&lt; use name</span><br></pre></td></tr></table></figure>
+<p>上面是模拟koa2，下面直接使用koa2</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> Koa = <span class="built_in">require</span>(<span class="string">'koa'</span>);</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> Koa();</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> one = <span class="function">(<span class="params">ctx, next</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&gt;&gt; one'</span>);</span><br><span class="line">    <span class="comment">// return next();</span></span><br><span class="line">    next();</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&lt;&lt; one'</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> two = <span class="function">(<span class="params">ctx, next</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&gt;&gt; two'</span>);</span><br><span class="line">    <span class="comment">// return next();</span></span><br><span class="line">    next();</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&lt;&lt; two'</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> three = <span class="function">(<span class="params">ctx, next</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&gt;&gt; three'</span>);</span><br><span class="line">    <span class="comment">// return next();</span></span><br><span class="line">    next();</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'&lt;&lt; three'</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">app.use(one);</span><br><span class="line">app.use(two);</span><br><span class="line">app.use(three);</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">3000</span>);</span><br></pre></td></tr></table></figure>
+<p>输出结果：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; one</span><br><span class="line">&gt;&gt; two</span><br><span class="line">&gt;&gt; three</span><br><span class="line">&lt;&lt; three</span><br><span class="line">&lt;&lt; two</span><br><span class="line">&lt;&lt; one</span><br></pre></td></tr></table></figure>
+<p>如果打开上面<code>return</code><br>则输出结果为：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt; one</span><br><span class="line">&gt;&gt; two</span><br><span class="line">&gt;&gt; three</span><br></pre></td></tr></table></figure>
+<p>这样的话可以阻止会面的回溯，通常也会这样写，当然也有特殊case中需要用到这个特性，比如<br>记录请求的总耗时</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">app.use( <span class="function">(<span class="params">ctx, next</span>) =&gt;</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">const</span> startTime = <span class="built_in">Date</span>.now()</span><br><span class="line">    <span class="keyword">const</span> &#123; request, response &#125; = ctx</span><br><span class="line"></span><br><span class="line">    ctx.request.uuid = ctx.headers.UNIQID || uuid()</span><br><span class="line">    ctx.request.sequence = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> next().then(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">        <span class="keyword">const</span> endTime = <span class="built_in">Date</span>.now()</span><br><span class="line">        process.emit(<span class="string">'log.access'</span>, &#123;</span><br><span class="line">        request, response, startTime, endTime, ctx,</span><br><span class="line">        uuid: ctx.request.uuid,</span><br><span class="line">        sequence: ctx.request.sequence,</span><br><span class="line">        timeCost: endTime - startTime</span><br><span class="line">        &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -257,7 +387,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-04-23T21:10:23+08:00">
                 2018-04-23
@@ -415,7 +545,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-22T10:19:23+08:00">
                 2018-03-22
@@ -575,7 +705,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-13T17:52:39+08:00">
                 2018-03-13
@@ -753,7 +883,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-09T11:06:51+08:00">
                 2018-03-09
@@ -894,7 +1024,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:28:56+08:00">
                 2018-03-08
@@ -1018,7 +1148,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:00:18+08:00">
                 2018-03-08
@@ -1149,7 +1279,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T14:55:14+08:00">
                 2018-03-08
@@ -1410,7 +1540,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T14:26:10+08:00">
                 2018-03-08
@@ -1572,8 +1702,8 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">8</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">9</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1623,7 +1753,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
