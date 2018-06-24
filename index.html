@@ -181,7 +181,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -191,7 +191,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -214,6 +214,140 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/24/函数消抖与节流/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/06/24/函数消抖与节流/" itemprop="url">函数消抖与节流</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-06-24T08:43:55+08:00">
+                2018-06-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="函数防抖与节流是很相似的概念，但它们的应用场景不太一样。"><a href="#函数防抖与节流是很相似的概念，但它们的应用场景不太一样。" class="headerlink" title="函数防抖与节流是很相似的概念，但它们的应用场景不太一样。"></a>函数防抖与节流是很相似的概念，但它们的应用场景不太一样。</h3><p>我们先从概念上深刻理解它们。</p>
+<p>先说函数<code>防抖</code>-<code>debounce</code>。其概念其实是从机械开关和继电器的“去弹跳”（debounce）衍生 出来的，基本思路就是把多个信号合并为一个信号。</p>
+<p>单反也有相似的概念，在拍照的时候手如果拿不稳晃的时候拍照一般手机是拍不出好照片的，因此智能手机是在你按一下时连续拍许多张，通过合成手段，生成一张。翻译成JS就是，事件内的N个动作会被忽略，只有事件后由程序触发的动作有效。</p>
+<p>实现思路如下，将目标方法（动作）包装在setTimeout里面，然后这个方法是一个事件的回调函数，如果这个回调一直执行，那么这些动作就一直不执行。为什么不执行呢，我们搞了一个clearTimeout，这样setTimeout里的方法就不会执行！ 为什么要clearTimeout呢，我们就需要将事件内的连续动作删掉嘛！待到用户不触发这事件了。那么setTimeout就自然会执行这个方法。</p>
+<p>那么这个方法用在什么地方呢，就是用于input输入框架的格式验证，假如只是验证都是字母也罢了，太简单了，不怎么耗性能，如果是验证是否身份证，这性能消耗大，你可以隔170ms才验证一次。这时就需要这个东西。或者你这个是自动完全，需要将已有的输入数据往后端拉一个列表，频繁的交互，后端肯定耗不起，这时也需要这个，如隔350ms。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">debounce</span>(<span class="params">func, delay</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> timeout;</span><br><span class="line">    <span class="keyword">return</span> <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">"清除"</span>,timeout,e.target.value)</span><br><span class="line">        clearTimeout(timeout);</span><br><span class="line">        <span class="keyword">var</span> context = <span class="keyword">this</span>, args = <span class="built_in">arguments</span></span><br><span class="line">        <span class="built_in">console</span>.log(<span class="string">"新的"</span>,timeout, e.target.value)</span><br><span class="line">        timeout = setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">          <span class="built_in">console</span>.log(<span class="string">"----"</span>)</span><br><span class="line">          func.apply(context, args);</span><br><span class="line">        &#125;,delay)</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> validate = debounce(<span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"change"</span>, e.target.value, <span class="keyword">new</span> <span class="built_in">Date</span><span class="number">-0</span>)</span><br><span class="line">&#125;, <span class="number">380</span>);</span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 绑定监听</span></span><br><span class="line"><span class="built_in">document</span>.querySelector(<span class="string">"input"</span>).addEventListener(<span class="string">'input'</span>, validate);</span><br></pre></td></tr></table></figure>
+<p>这个保证了正常的用户每输入1，2个字符就能触发一次。如果用户是输入法狂魔，也可以狠制他每输入3～6个字符触发一次。</p>
+<p>这个方法的重点是，它在用户不触发事件的时，才触发动作，并且抑制了本来在事件中要执行的动作。</p>
+<p>其他应用场合：提交按钮的点击事件。</p>
+<p>再看节流，throttle。节流的概念可以想象一下水坝，你建了水坝在河道中，不能让水流动不了，你只能让水流慢些。换言之，你不能让用户的方法都不执行。如果这样干，就是debounce了。为了让用户的方法在某个时间段内只执行一次，我们需要保存上次执行的时间点与定时器。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">'panel'</span> <span class="attr">style</span>=<span class="string">"background:red;width:200px;height:200px"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">throttle</span>(<span class="params">fn, threshhold</span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> timeout</span><br><span class="line">  <span class="keyword">var</span> start = <span class="keyword">new</span> <span class="built_in">Date</span>;</span><br><span class="line">  <span class="keyword">var</span> threshhold = threshhold || <span class="number">160</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> context = <span class="keyword">this</span>, args = <span class="built_in">arguments</span>, curr = <span class="keyword">new</span> <span class="built_in">Date</span>() - <span class="number">0</span></span><br><span class="line">    clearTimeout(timeout)<span class="comment">//总是干掉事件回调</span></span><br><span class="line">    <span class="keyword">if</span> (curr - start &gt;= threshhold) &#123;</span><br><span class="line">          <span class="built_in">console</span>.log(<span class="string">"now"</span>, curr, curr - start)<span class="comment">//注意这里相减的结果，都差不多是160左右</span></span><br><span class="line">          fn.apply(context, args) <span class="comment">//只执行一部分方法，这些方法是在某个时间段内执行一次</span></span><br><span class="line">          start = curr</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="comment">//让方法在脱离事件后也能执行一次</span></span><br><span class="line">      timeout = setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">          fn.apply(context, args)</span><br><span class="line">      &#125;, threshhold);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> mousemove = throttle(<span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(e.pageX, e.pageY)</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 绑定监听</span></span><br><span class="line"><span class="built_in">document</span>.querySelector(<span class="string">"#panel"</span>).addEventListener(<span class="string">'mousemove'</span>, mousemove);</span><br></pre></td></tr></table></figure>
+<p>函数节流会用在比input, keyup更频繁触发的事件中，如resize, touchmove, mousemove, scroll。throttle 会强制函数以固定的速率执行。因此这个方法比较适合应用于动画相关的场景。</p>
+<p>如果还是不能完全体会 debounce 和 throttle 的差异，可以到 这个页面 看一下两者可视化的比较。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -257,7 +391,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-04T11:25:15+08:00">
                 2018-05-04
@@ -399,7 +533,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-04-23T21:10:23+08:00">
                 2018-04-23
@@ -557,7 +691,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-22T10:19:23+08:00">
                 2018-03-22
@@ -717,7 +851,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-13T17:52:39+08:00">
                 2018-03-13
@@ -895,7 +1029,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-09T11:06:51+08:00">
                 2018-03-09
@@ -1036,7 +1170,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:28:56+08:00">
                 2018-03-08
@@ -1160,7 +1294,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:00:18+08:00">
                 2018-03-08
@@ -1291,7 +1425,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T14:55:14+08:00">
                 2018-03-08
@@ -1552,7 +1686,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T14:26:10+08:00">
                 2018-03-08
@@ -1714,8 +1848,8 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">9</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -1765,7 +1899,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
