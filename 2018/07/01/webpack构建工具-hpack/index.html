@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="webpack工具集成功能点代码打包资源分包css分离图片解析mock数据less/sass样式使用方式配置123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475&amp;#123">
+<meta property="og:type" content="article">
+<meta property="og:title" content="webpack构建工具-hpack">
+<meta property="og:url" content="http://yoursite.com/2018/07/01/webpack构建工具-hpack/index.html">
+<meta property="og:site_name" content="菜鸟的逆袭">
+<meta property="og:description" content="webpack工具集成功能点代码打包资源分包css分离图片解析mock数据less/sass样式使用方式配置123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475&amp;#123">
+<meta property="og:updated_time" content="2018-07-01T09:42:33.363Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="webpack构建工具-hpack">
+<meta name="twitter:description" content="webpack工具集成功能点代码打包资源分包css分离图片解析mock数据less/sass样式使用方式配置123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475&amp;#123">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/07/01/webpack构建工具-hpack/"/>
+
+
+
+
+
+  <title>webpack构建工具-hpack | 菜鸟的逆袭</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">菜鸟的逆袭</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/01/webpack构建工具-hpack/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">webpack构建工具-hpack</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-01T17:36:40+08:00">
+                2018-07-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="webpack工具集成"><a href="#webpack工具集成" class="headerlink" title="webpack工具集成"></a>webpack工具集成</h1><h2 id="功能点"><a href="#功能点" class="headerlink" title="功能点"></a>功能点</h2><h4 id="代码打包"><a href="#代码打包" class="headerlink" title="代码打包"></a>代码打包</h4><h4 id="资源分包"><a href="#资源分包" class="headerlink" title="资源分包"></a>资源分包</h4><h4 id="css分离"><a href="#css分离" class="headerlink" title="css分离"></a>css分离</h4><h4 id="图片解析"><a href="#图片解析" class="headerlink" title="图片解析"></a>图片解析</h4><h4 id="mock数据"><a href="#mock数据" class="headerlink" title="mock数据"></a>mock数据</h4><h4 id="less-sass样式"><a href="#less-sass样式" class="headerlink" title="less/sass样式"></a>less/sass样式</h4><h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    "art-template": "^4.12.2", //内置art高性能模板</span><br><span class="line">    "art-template-loader": "^1.4.3", //art模板对应的loader</span><br><span class="line">    "axios": "^0.18.0", //传统与现代的结合，request请求库</span><br><span class="line">    "babel-eslint": "^8.2.3", //eslint对应的babel转义</span><br><span class="line">    "babel-loader": "^7.1.4", //babel对应loader</span><br><span class="line">    "babel-plugin-runtime": "^1.0.7", //</span><br><span class="line">    "babel-plugin-transform-decorators-legacy": "^1.3.4",</span><br><span class="line">    "babel-plugin-transform-runtime": "^6.23.0",</span><br><span class="line">    "babel-preset-env": "^1.6.1",</span><br><span class="line">    "babel-preset-stage-2": "^6.24.1",</span><br><span class="line">    "caniuse-lite": "^1.0.30000835",</span><br><span class="line">    "chalk": "^2.4.1",</span><br><span class="line">    "clean-webpack-plugin": "^0.1.19",</span><br><span class="line">    "commander": "^2.15.1",</span><br><span class="line">    "cross-env": "^5.1.4",</span><br><span class="line">    "css-loader": "^0.28.11",</span><br><span class="line">    "cssnano": "^3.10.0",</span><br><span class="line">    "cssnano-preset-advanced": "^4.0.0-rc.2",</span><br><span class="line">    "easy-config-mock": "^1.0.2",</span><br><span class="line">    "eslint": "^4.19.1",</span><br><span class="line">    "eslint-config-standard": "^12.0.0-alpha.0",</span><br><span class="line">    "eslint-friendly-formatter": "^4.0.1",</span><br><span class="line">    "eslint-loader": "^2.0.0",</span><br><span class="line">    "eslint-plugin-import": "^2.11.0",</span><br><span class="line">    "eslint-plugin-node": "^6.0.1",</span><br><span class="line">    "eslint-plugin-promise": "^3.7.0",</span><br><span class="line">    "eslint-plugin-standard": "^3.1.0",</span><br><span class="line">    "eslint-plugin-vue": "^4.5.0",</span><br><span class="line">    "file-loader": "^1.1.11",</span><br><span class="line">    "friendly-errors-webpack-plugin": "^1.7.0",</span><br><span class="line">    "glob": "^7.1.2",</span><br><span class="line">    "happypack": "^5.0.0",</span><br><span class="line">    "html-webpack-plugin": "^3.2.0",</span><br><span class="line">    "image-webpack-loader": "^4.2.0",</span><br><span class="line">    "jquery": "^3.3.1",</span><br><span class="line">    "jsonp": "^0.2.1",</span><br><span class="line">    "lodash": "^4.17.10",</span><br><span class="line">    "mime": "^2.3.1",</span><br><span class="line">    "mini-css-extract-plugin": "^0.4.0",</span><br><span class="line">    "mock-webpack-plugin": "^2.0.0",</span><br><span class="line">    "node-sass": "^4.9.0",</span><br><span class="line">    "optimize-css-assets-webpack-plugin": "^4.0.1",</span><br><span class="line">    "os": "^0.1.1",</span><br><span class="line">    "postcss-aspect-ratio-mini": "^0.0.2",</span><br><span class="line">    "postcss-cssnext": "^3.1.0",</span><br><span class="line">    "postcss-import": "^11.1.0",</span><br><span class="line">    "postcss-loader": "^2.1.5",</span><br><span class="line">    "postcss-px-to-viewport": "^0.0.3",</span><br><span class="line">    "postcss-url": "^7.3.2",</span><br><span class="line">    "postcss-viewport-units": "^0.1.4",</span><br><span class="line">    "postcss-write-svg": "^3.0.1",</span><br><span class="line">    "promise-polyfill": "^7.1.2",</span><br><span class="line">    "pug": "^2.0.3",</span><br><span class="line">    "pug-plain-loader": "^1.0.0",</span><br><span class="line">    "ramda": "^0.25.0",</span><br><span class="line">    "sass-loader": "^7.0.1",</span><br><span class="line">    "standard": "^11.0.1",</span><br><span class="line">    "strict-uri-encode": "^2.0.0",</span><br><span class="line">    "style-loader": "^0.21.0",</span><br><span class="line">    "stylus": "^0.54.5",</span><br><span class="line">    "stylus-loader": "^3.0.2",</span><br><span class="line">    "uglifyjs-webpack-plugin": "^1.2.5",</span><br><span class="line">    "url-loader": "^1.0.1",</span><br><span class="line">    "vue": "^2.5.16",</span><br><span class="line">    "vue-loader": "^15.0.9",</span><br><span class="line">    "vue-router": "^3.0.1",</span><br><span class="line">    "vue-style-loader": "^4.1.0",</span><br><span class="line">    "vue-template-compiler": "^2.5.16",</span><br><span class="line">    "vuex": "^3.0.1",</span><br><span class="line">    "webpack": "^4.8.0",</span><br><span class="line">    "webpack-cli": "^2.1.3",</span><br><span class="line">    "webpack-dev-server": "^3.1.4",</span><br><span class="line">    "webpack-merge": "^4.1.2"</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="这里简单说下-转义BABEL的POLYFILL和RUNTIME的区别"><a href="#这里简单说下-转义BABEL的POLYFILL和RUNTIME的区别" class="headerlink" title="这里简单说下 转义BABEL的POLYFILL和RUNTIME的区别"></a>这里简单说下 <code>转义BABEL的POLYFILL和RUNTIME的区别</code></h4><p><code>babel-polyfill</code> 使用场景</p>
+<p><code>Babel</code> 默认只转换新的 <code>JavaScript</code> 语法，而不转换新的 API。例如，<code>Iterator、Generator、Set、Maps、Proxy、Reflect、Symbol、Promise</code> 等全局对象，以及一些定义在全局对象上的方法（比如 <code>Object.assign</code>）都不会转译。如果想使用这些新的对象和方法，必须使用 <code>babel-polyfill</code>，为当前环境提供一个垫片。</p>
+<p><code>babel-runtime</code> 使用场景</p>
+<p>Babel 转译后的代码要实现源代码同样的功能需要借助一些帮助函数，例如，<code>{ [name]: &#39;JavaScript&#39; }</code> 转译后的代码如下所示：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_defineProperty</span>(<span class="params">obj, key, value</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (key <span class="keyword">in</span> obj) &#123;</span><br><span class="line">    <span class="built_in">Object</span>.defineProperty(obj, key, &#123;</span><br><span class="line">      value: value,</span><br><span class="line">      enumerable: <span class="literal">true</span>,</span><br><span class="line">      configurable: <span class="literal">true</span>,</span><br><span class="line">      writable: <span class="literal">true</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    obj[key] = value;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> obj = _defineProperty(&#123;&#125;, <span class="string">'name'</span>, <span class="string">'JavaScript'</span>);</span><br></pre></td></tr></table></figure>
+<p>类似上面的帮助函数 <code>_defineProperty</code> 可能会重复出现在一些模块里，导致编译后的代码体积变大。Babel 为了解决这个问题，提供了单独的包 babel-runtime 供编译模块复用工具函数。</p>
+<p>启用插件 <code>babel-plugin-transform-runtime</code> 后，<code>Babel</code> 就会使用 <code>babel-runtime</code> 下的工具函数，转译代码如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line"><span class="comment">// 之前的 `_defineProperty` 函数已经作为公共模块 `babel-runtime/helpers/defineProperty` 使用</span></span><br><span class="line"><span class="keyword">var</span> _defineProperty2 = <span class="built_in">require</span>(<span class="string">'babel-runtime/helpers/defineProperty'</span>);</span><br><span class="line"><span class="keyword">var</span> _defineProperty3 = _interopRequireDefault(_defineProperty2);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_interopRequireDefault</span>(<span class="params">obj</span>) </span>&#123; <span class="keyword">return</span> obj &amp;&amp; obj.__esModule ? obj : &#123; <span class="attr">default</span>: obj &#125;; &#125;</span><br><span class="line"><span class="keyword">var</span> obj = (<span class="number">0</span>, _defineProperty3.default)(&#123;&#125;, <span class="string">'name'</span>, <span class="string">'JavaScript'</span>);</span><br></pre></td></tr></table></figure>
+<p>除此之外，<code>babel</code> 还为源代码的非实例方法（<code>Object.assign</code>，实例方法是类似这样的 <code>&quot;foobar&quot;.includes(&quot;foo&quot;)</code>）和 <code>babel-runtime/helps</code> 下的工具函数自动引用了 <code>polyfill</code>。这样可以避免污染全局命名空间，非常适合于 JavaScript 库和工具包的实现。例如 <code>const obj = {}, Object.assign(obj, { age: 30 });</code> 转译后的代码如下所示：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line"><span class="comment">// 使用了 core-js 提供的 assign</span></span><br><span class="line"><span class="keyword">var</span> _assign = <span class="built_in">require</span>(<span class="string">'babel-runtime/core-js/object/assign'</span>);</span><br><span class="line"><span class="keyword">var</span> _assign2 = _interopRequireDefault(_assign);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_interopRequireDefault</span>(<span class="params">obj</span>) </span>&#123; <span class="keyword">return</span> obj &amp;&amp; obj.__esModule ? obj : &#123; <span class="attr">default</span>: obj &#125;; &#125;</span><br><span class="line"><span class="keyword">var</span> obj = &#123;&#125;;</span><br><span class="line">(<span class="number">0</span>, _assign2.default)(obj, &#123;</span><br><span class="line">  age: <span class="number">30</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>思考：<code>babel-runtime</code> 为什么适合 <code>JavaScript</code> 库和工具包的实现？</p>
+<p>避免 babel 编译的工具函数在每个模块里重复出现，减小库和工具包的体积；</p>
+<p>在没有使用 <code>babel-runtime</code> 之前，库和工具包一般不会直接引入 <code>polyfill</code>。否则像 <code>Promise</code> 这样的全局对象会污染全局命名空间，这就要求库的使用者自己提供 <code>polyfill</code>。这些 <code>polyfill</code> 一般在库和工具的使用说明中会提到，比如很多库都会有要求提供 es5 的 <code>polyfill</code>。在使用 <code>babel-runtime</code> 后，库和工具只要在 <code>package.json</code> 中增加依赖 <code>babel-runtime</code>，交给 <code>babel-runtime</code> 去引入 <code>polyfill</code> 就行了；</p>
+<p>总结：</p>
+<p>具体项目还是需要使用 <code>babel-polyfill</code>，只使用 · 的话，实例方法不能正常工作（例如 “foobar”.includes(“foo”)）；</p>
+<p><code>JavaScript</code> 库和工具可以使用 <code>babel-runtime</code>，在实际项目中使用这些库和工具，需要该项目本身提供 <code>polyfill</code></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/24/函数消抖与节流/" rel="next" title="函数消抖与节流">
+                <i class="fa fa-chevron-left"></i> 函数消抖与节流
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">schacker</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#webpack工具集成"><span class="nav-number">1.</span> <span class="nav-text">webpack工具集成</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#功能点"><span class="nav-number">1.1.</span> <span class="nav-text">功能点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#代码打包"><span class="nav-number">1.1.0.1.</span> <span class="nav-text">代码打包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#资源分包"><span class="nav-number">1.1.0.2.</span> <span class="nav-text">资源分包</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#css分离"><span class="nav-number">1.1.0.3.</span> <span class="nav-text">css分离</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#图片解析"><span class="nav-number">1.1.0.4.</span> <span class="nav-text">图片解析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mock数据"><span class="nav-number">1.1.0.5.</span> <span class="nav-text">mock数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#less-sass样式"><span class="nav-number">1.1.0.6.</span> <span class="nav-text">less/sass样式</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#使用方式"><span class="nav-number">1.2.</span> <span class="nav-text">使用方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#配置"><span class="nav-number">1.2.1.</span> <span class="nav-text">配置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#这里简单说下-转义BABEL的POLYFILL和RUNTIME的区别"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">这里简单说下 转义BABEL的POLYFILL和RUNTIME的区别</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">schacker</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

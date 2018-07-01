@@ -228,6 +228,142 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/01/webpack构建工具-hpack/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/01/webpack构建工具-hpack/" itemprop="url">webpack构建工具-hpack</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-01T17:36:40+08:00">
+                2018-07-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="webpack工具集成"><a href="#webpack工具集成" class="headerlink" title="webpack工具集成"></a>webpack工具集成</h1><h2 id="功能点"><a href="#功能点" class="headerlink" title="功能点"></a>功能点</h2><h4 id="代码打包"><a href="#代码打包" class="headerlink" title="代码打包"></a>代码打包</h4><h4 id="资源分包"><a href="#资源分包" class="headerlink" title="资源分包"></a>资源分包</h4><h4 id="css分离"><a href="#css分离" class="headerlink" title="css分离"></a>css分离</h4><h4 id="图片解析"><a href="#图片解析" class="headerlink" title="图片解析"></a>图片解析</h4><h4 id="mock数据"><a href="#mock数据" class="headerlink" title="mock数据"></a>mock数据</h4><h4 id="less-sass样式"><a href="#less-sass样式" class="headerlink" title="less/sass样式"></a>less/sass样式</h4><h2 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h2><h3 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h3><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    "art-template": "^4.12.2", //内置art高性能模板</span><br><span class="line">    "art-template-loader": "^1.4.3", //art模板对应的loader</span><br><span class="line">    "axios": "^0.18.0", //传统与现代的结合，request请求库</span><br><span class="line">    "babel-eslint": "^8.2.3", //eslint对应的babel转义</span><br><span class="line">    "babel-loader": "^7.1.4", //babel对应loader</span><br><span class="line">    "babel-plugin-runtime": "^1.0.7", //</span><br><span class="line">    "babel-plugin-transform-decorators-legacy": "^1.3.4",</span><br><span class="line">    "babel-plugin-transform-runtime": "^6.23.0",</span><br><span class="line">    "babel-preset-env": "^1.6.1",</span><br><span class="line">    "babel-preset-stage-2": "^6.24.1",</span><br><span class="line">    "caniuse-lite": "^1.0.30000835",</span><br><span class="line">    "chalk": "^2.4.1",</span><br><span class="line">    "clean-webpack-plugin": "^0.1.19",</span><br><span class="line">    "commander": "^2.15.1",</span><br><span class="line">    "cross-env": "^5.1.4",</span><br><span class="line">    "css-loader": "^0.28.11",</span><br><span class="line">    "cssnano": "^3.10.0",</span><br><span class="line">    "cssnano-preset-advanced": "^4.0.0-rc.2",</span><br><span class="line">    "easy-config-mock": "^1.0.2",</span><br><span class="line">    "eslint": "^4.19.1",</span><br><span class="line">    "eslint-config-standard": "^12.0.0-alpha.0",</span><br><span class="line">    "eslint-friendly-formatter": "^4.0.1",</span><br><span class="line">    "eslint-loader": "^2.0.0",</span><br><span class="line">    "eslint-plugin-import": "^2.11.0",</span><br><span class="line">    "eslint-plugin-node": "^6.0.1",</span><br><span class="line">    "eslint-plugin-promise": "^3.7.0",</span><br><span class="line">    "eslint-plugin-standard": "^3.1.0",</span><br><span class="line">    "eslint-plugin-vue": "^4.5.0",</span><br><span class="line">    "file-loader": "^1.1.11",</span><br><span class="line">    "friendly-errors-webpack-plugin": "^1.7.0",</span><br><span class="line">    "glob": "^7.1.2",</span><br><span class="line">    "happypack": "^5.0.0",</span><br><span class="line">    "html-webpack-plugin": "^3.2.0",</span><br><span class="line">    "image-webpack-loader": "^4.2.0",</span><br><span class="line">    "jquery": "^3.3.1",</span><br><span class="line">    "jsonp": "^0.2.1",</span><br><span class="line">    "lodash": "^4.17.10",</span><br><span class="line">    "mime": "^2.3.1",</span><br><span class="line">    "mini-css-extract-plugin": "^0.4.0",</span><br><span class="line">    "mock-webpack-plugin": "^2.0.0",</span><br><span class="line">    "node-sass": "^4.9.0",</span><br><span class="line">    "optimize-css-assets-webpack-plugin": "^4.0.1",</span><br><span class="line">    "os": "^0.1.1",</span><br><span class="line">    "postcss-aspect-ratio-mini": "^0.0.2",</span><br><span class="line">    "postcss-cssnext": "^3.1.0",</span><br><span class="line">    "postcss-import": "^11.1.0",</span><br><span class="line">    "postcss-loader": "^2.1.5",</span><br><span class="line">    "postcss-px-to-viewport": "^0.0.3",</span><br><span class="line">    "postcss-url": "^7.3.2",</span><br><span class="line">    "postcss-viewport-units": "^0.1.4",</span><br><span class="line">    "postcss-write-svg": "^3.0.1",</span><br><span class="line">    "promise-polyfill": "^7.1.2",</span><br><span class="line">    "pug": "^2.0.3",</span><br><span class="line">    "pug-plain-loader": "^1.0.0",</span><br><span class="line">    "ramda": "^0.25.0",</span><br><span class="line">    "sass-loader": "^7.0.1",</span><br><span class="line">    "standard": "^11.0.1",</span><br><span class="line">    "strict-uri-encode": "^2.0.0",</span><br><span class="line">    "style-loader": "^0.21.0",</span><br><span class="line">    "stylus": "^0.54.5",</span><br><span class="line">    "stylus-loader": "^3.0.2",</span><br><span class="line">    "uglifyjs-webpack-plugin": "^1.2.5",</span><br><span class="line">    "url-loader": "^1.0.1",</span><br><span class="line">    "vue": "^2.5.16",</span><br><span class="line">    "vue-loader": "^15.0.9",</span><br><span class="line">    "vue-router": "^3.0.1",</span><br><span class="line">    "vue-style-loader": "^4.1.0",</span><br><span class="line">    "vue-template-compiler": "^2.5.16",</span><br><span class="line">    "vuex": "^3.0.1",</span><br><span class="line">    "webpack": "^4.8.0",</span><br><span class="line">    "webpack-cli": "^2.1.3",</span><br><span class="line">    "webpack-dev-server": "^3.1.4",</span><br><span class="line">    "webpack-merge": "^4.1.2"</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="这里简单说下-转义BABEL的POLYFILL和RUNTIME的区别"><a href="#这里简单说下-转义BABEL的POLYFILL和RUNTIME的区别" class="headerlink" title="这里简单说下 转义BABEL的POLYFILL和RUNTIME的区别"></a>这里简单说下 <code>转义BABEL的POLYFILL和RUNTIME的区别</code></h4><p><code>babel-polyfill</code> 使用场景</p>
+<p><code>Babel</code> 默认只转换新的 <code>JavaScript</code> 语法，而不转换新的 API。例如，<code>Iterator、Generator、Set、Maps、Proxy、Reflect、Symbol、Promise</code> 等全局对象，以及一些定义在全局对象上的方法（比如 <code>Object.assign</code>）都不会转译。如果想使用这些新的对象和方法，必须使用 <code>babel-polyfill</code>，为当前环境提供一个垫片。</p>
+<p><code>babel-runtime</code> 使用场景</p>
+<p>Babel 转译后的代码要实现源代码同样的功能需要借助一些帮助函数，例如，<code>{ [name]: &#39;JavaScript&#39; }</code> 转译后的代码如下所示：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_defineProperty</span>(<span class="params">obj, key, value</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (key <span class="keyword">in</span> obj) &#123;</span><br><span class="line">    <span class="built_in">Object</span>.defineProperty(obj, key, &#123;</span><br><span class="line">      value: value,</span><br><span class="line">      enumerable: <span class="literal">true</span>,</span><br><span class="line">      configurable: <span class="literal">true</span>,</span><br><span class="line">      writable: <span class="literal">true</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    obj[key] = value;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> obj = _defineProperty(&#123;&#125;, <span class="string">'name'</span>, <span class="string">'JavaScript'</span>);</span><br></pre></td></tr></table></figure>
+<p>类似上面的帮助函数 <code>_defineProperty</code> 可能会重复出现在一些模块里，导致编译后的代码体积变大。Babel 为了解决这个问题，提供了单独的包 babel-runtime 供编译模块复用工具函数。</p>
+<p>启用插件 <code>babel-plugin-transform-runtime</code> 后，<code>Babel</code> 就会使用 <code>babel-runtime</code> 下的工具函数，转译代码如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line"><span class="comment">// 之前的 `_defineProperty` 函数已经作为公共模块 `babel-runtime/helpers/defineProperty` 使用</span></span><br><span class="line"><span class="keyword">var</span> _defineProperty2 = <span class="built_in">require</span>(<span class="string">'babel-runtime/helpers/defineProperty'</span>);</span><br><span class="line"><span class="keyword">var</span> _defineProperty3 = _interopRequireDefault(_defineProperty2);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_interopRequireDefault</span>(<span class="params">obj</span>) </span>&#123; <span class="keyword">return</span> obj &amp;&amp; obj.__esModule ? obj : &#123; <span class="attr">default</span>: obj &#125;; &#125;</span><br><span class="line"><span class="keyword">var</span> obj = (<span class="number">0</span>, _defineProperty3.default)(&#123;&#125;, <span class="string">'name'</span>, <span class="string">'JavaScript'</span>);</span><br></pre></td></tr></table></figure>
+<p>除此之外，<code>babel</code> 还为源代码的非实例方法（<code>Object.assign</code>，实例方法是类似这样的 <code>&quot;foobar&quot;.includes(&quot;foo&quot;)</code>）和 <code>babel-runtime/helps</code> 下的工具函数自动引用了 <code>polyfill</code>。这样可以避免污染全局命名空间，非常适合于 JavaScript 库和工具包的实现。例如 <code>const obj = {}, Object.assign(obj, { age: 30 });</code> 转译后的代码如下所示：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line"><span class="comment">// 使用了 core-js 提供的 assign</span></span><br><span class="line"><span class="keyword">var</span> _assign = <span class="built_in">require</span>(<span class="string">'babel-runtime/core-js/object/assign'</span>);</span><br><span class="line"><span class="keyword">var</span> _assign2 = _interopRequireDefault(_assign);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_interopRequireDefault</span>(<span class="params">obj</span>) </span>&#123; <span class="keyword">return</span> obj &amp;&amp; obj.__esModule ? obj : &#123; <span class="attr">default</span>: obj &#125;; &#125;</span><br><span class="line"><span class="keyword">var</span> obj = &#123;&#125;;</span><br><span class="line">(<span class="number">0</span>, _assign2.default)(obj, &#123;</span><br><span class="line">  age: <span class="number">30</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>思考：<code>babel-runtime</code> 为什么适合 <code>JavaScript</code> 库和工具包的实现？</p>
+<p>避免 babel 编译的工具函数在每个模块里重复出现，减小库和工具包的体积；</p>
+<p>在没有使用 <code>babel-runtime</code> 之前，库和工具包一般不会直接引入 <code>polyfill</code>。否则像 <code>Promise</code> 这样的全局对象会污染全局命名空间，这就要求库的使用者自己提供 <code>polyfill</code>。这些 <code>polyfill</code> 一般在库和工具的使用说明中会提到，比如很多库都会有要求提供 es5 的 <code>polyfill</code>。在使用 <code>babel-runtime</code> 后，库和工具只要在 <code>package.json</code> 中增加依赖 <code>babel-runtime</code>，交给 <code>babel-runtime</code> 去引入 <code>polyfill</code> 就行了；</p>
+<p>总结：</p>
+<p>具体项目还是需要使用 <code>babel-polyfill</code>，只使用 · 的话，实例方法不能正常工作（例如 “foobar”.includes(“foo”)）；</p>
+<p><code>JavaScript</code> 库和工具可以使用 <code>babel-runtime</code>，在实际项目中使用这些库和工具，需要该项目本身提供 <code>polyfill</code></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/06/24/函数消抖与节流/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1644,167 +1780,13 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/08/20180308-PWA/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="schacker">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜鸟的逆袭">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/08/20180308-PWA/" itemprop="url">20180308_PWA</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T14:26:10+08:00">
-                2018-03-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h1 id="PWA初级"><a href="#PWA初级" class="headerlink" title="PWA初级"></a>PWA初级</h1><h2 id="what-is-pwa"><a href="#what-is-pwa" class="headerlink" title="what is pwa ?"></a>what is pwa ?</h2><ul>
-<li>PWA，全称Progressive Web Apps是Google提出的用前沿的Web技术为网页提供APP般使用体验的一系列方案。</li>
-</ul>
-<h2 id="prepare"><a href="#prepare" class="headerlink" title="prepare"></a>prepare</h2><ul>
-<li><p>首先准备好http-server、ngrok</p>
-</li>
-<li><p>需要的基础html及css</p>
-</li>
-<li><p>manifest.json文件</p>
-</li>
-</ul>
-<h2 id="manifest-json"><a href="#manifest-json" class="headerlink" title="manifest.json"></a>manifest.json</h2><ul>
-<li>该文件主要是让PWA应用呗添加到主屏幕时，定义应用的名称，图标icon等信息</li>
-</ul>
-<h2 id="showtime😋"><a href="#showtime😋" class="headerlink" title="showtime😋"></a>showtime😋</h2><p>我们添加必要的html代码和引入css、manifest.json，然后加入index.js来注册serviceWorker。<br><a href="">https://www.w3.org/TR/service-workers-1/</a></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">if (navigator.serviceWorker != null) &#123;</span><br><span class="line">		navigator.serviceWorker.register(&apos;sw.js&apos;)</span><br><span class="line">			.then(function(registration) &#123;</span><br><span class="line">				console.log(&apos;Registered events at scope: &apos;, registration.scope);</span><br><span class="line">			&#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">在serviceWorker中会用到一些全局变量：</span><br><span class="line">&gt;self:表示Service Worker作用域，也是全局变量</span><br><span class="line"></span><br><span class="line">&gt;caches:表示缓存</span><br><span class="line"></span><br><span class="line">&gt;skipWaiting：表示强制当前处在waiting状态的脚本进入activate状态</span><br><span class="line"></span><br><span class="line">&gt;clients:表示Service Worker接管的页面</span><br></pre></td></tr></table></figure>
-<h2 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h2><h4 id="定义缓存"><a href="#定义缓存" class="headerlink" title="定义缓存"></a>定义缓存</h4><p>var cacheStorageKey = ‘minimal-pwa-1’ //cache-key<br>var cacheList = [  //cache-list<br>    ‘/‘,<br>    “index.html”,<br>    “index.css”,<br>    “./image/clear.png”<br>]</p>
-<h4 id="借助Service-Worker写缓存"><a href="#借助Service-Worker写缓存" class="headerlink" title="借助Service Worker写缓存"></a>借助Service Worker写缓存</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(&apos;install&apos;, function(e) &#123;</span><br><span class="line">	e.waitUntil(</span><br><span class="line">		caches.open(cacheStorageKey).then(function(cache) &#123;</span><br><span class="line">			return cache.addAll(cacheList)</span><br><span class="line">		&#125;).then(function() &#123;</span><br><span class="line">			return self.skipWaiting()</span><br><span class="line">		&#125;)</span><br><span class="line">	)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-<p>调用self.skipWaiting()可以在页面更新过程中，新的Service Worker脚本能立即激活和生效</p>
-<h4 id="动态缓存"><a href="#动态缓存" class="headerlink" title="动态缓存"></a>动态缓存</h4><p>网页抓取资源过程中，在Service Worker可以捕获fetch事件，可以自定义资源的响应请求<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">self.addEventListener(&apos;fetch&apos;, function(e) &#123;</span><br><span class="line">	e.respondWith(</span><br><span class="line">		caches.match(e.request).then(function(response) &#123;</span><br><span class="line">			if (response != null) &#123;</span><br><span class="line">				return response</span><br><span class="line">			&#125;</span><br><span class="line">			return fetch(e.request.url)</span><br><span class="line">		&#125;)</span><br><span class="line">	)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
-<p>例：我们可以通过fetch事件来处理获取资源异常的case，从而增强程序完整性和健壮性、可用性</p>
-<h4 id="更新静态资源"><a href="#更新静态资源" class="headerlink" title="更新静态资源"></a>更新静态资源</h4><p>缓存的资源随着版本的更新会过期，所以会根据缓存的字符串名称清除旧缓存<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">self.addEventListener(&apos;activate&apos;, function(e) &#123;</span><br><span class="line">	e.waitUntil(</span><br><span class="line">		caches.keys().then(function(keyList)&#123;</span><br><span class="line">			return Promise.all(keyList.map(function(key)&#123;</span><br><span class="line">				if (key !== cacheStorageKey) &#123;</span><br><span class="line">					return caches.delete(key)</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;))</span><br><span class="line">		&#125;)</span><br><span class="line">	)</span><br><span class="line">	return self.clients.claim()</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
-<p>在新安装的Service Worker中通过调用self.clients.claim()取得页面的控制权，保证使用最新缓存。旧sw脚本也会停止。<br>确保在每次修改了 service worker 后修改 cacheName，这能确保你永远能够从缓存中获得到最新版本的文件。过一段时间清理一下缓存删除掉没用的数据也是很重要的。</p>
-<h2 id="我就想看看它长什么样子？😏"><a href="#我就想看看它长什么样子？😏" class="headerlink" title="我就想看看它长什么样子？😏"></a>我就想看看它长什么样子？😏</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http-server -c-1</span><br><span class="line">ngrok http 8080</span><br></pre></td></tr></table></figure>
-<p>浏览器打开<a href="http://localhost:8080" target="_blank" rel="noopener">http://localhost:8080</a></p>
-<h2 id="页面更新"><a href="#页面更新" class="headerlink" title="页面更新"></a>页面更新</h2><p>页面被缓存之后，需要适当处理缓存失败时页面失效的更新。被缓存的资源是无法发起请求来判断是否被更新了，只有sw.js会自动根据http缓存机制尝试去判断应用是否被更新。<br>所以页面发生修改时，要同步修改sw.js文件，保证缓存名称也修改了。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;h3&gt;Revision 2&lt;/h3&gt;</span><br><span class="line">let cacheStorageKey = &apos;minimal-pwa-2&apos;</span><br></pre></td></tr></table></figure>
-<p>然后重新打开页面，这个时候渲染的页面依然是旧的，不过从devtools里看到sw.js被安装和激活。之后再次打开可以网页版本为2</p>
-<h1 id="PWA进阶版本"><a href="#PWA进阶版本" class="headerlink" title="PWA进阶版本"></a>PWA进阶版本</h1><p>何为进阶版本，那就是看起来比较牛逼的版本。</p>
-<h2 id="App-Shell"><a href="#App-Shell" class="headerlink" title="App Shell"></a>App Shell</h2><h4 id="从缓存中加载app-shell"><a href="#从缓存中加载app-shell" class="headerlink" title="从缓存中加载app shell"></a>从缓存中加载app shell</h4><p>*Service workers 可以截获 Progressive Web App 发起的请求并从缓存中返回响应。这意味着我们能够 决定如何来处理这些请求，以及决定哪些网络响应能够成为我们的缓存。</p>
-<p>*从内至外，caches.match() 从网络请求触发的 fetch 事件中得到请求内容，并判断请求的资源是 否存在于缓存中。然后以缓存中的内容作为响应，或者使用 fetch 函数来加载资源（如果缓存中没有该资源）。 response 最后通过 e.respondWith() 返回给 Web 页面。</p>
-<h2 id="Push"><a href="#Push" class="headerlink" title="Push"></a>Push</h2><p>😋 Push API提供Web应用消息推送能力，需要获取用户权限。</p>
-<h4 id="第一种姿势-本地模拟"><a href="#第一种姿势-本地模拟" class="headerlink" title="第一种姿势-本地模拟"></a>第一种姿势-本地模拟</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">default: unknown</span><br><span class="line">granted:已授权</span><br><span class="line">let notification = new Notification(&#123;&#125;)</span><br><span class="line">denied：未授权</span><br><span class="line">Notification.permission === &apos;default&apos; || Notification.permission !== &apos;denied&apos;</span><br><span class="line">Notification.requestPermission(permission =&gt; &#123;</span><br><span class="line">	permission === &apos;granted&apos; &amp;&amp; </span><br><span class="line">	(let notification = new Notification(&#123;&#125;))</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
-<p><a href="">https://developer.mozilla.org/en-US/docs/Web/API/Notification/permission</a></p>
-<h4 id="第二种姿势-firebase-😌鉴权登录有毒啊啊啊啊啊"><a href="#第二种姿势-firebase-😌鉴权登录有毒啊啊啊啊啊" class="headerlink" title="第二种姿势-firebase 😌鉴权登录有毒啊啊啊啊啊"></a>第二种姿势-firebase 😌鉴权登录有毒啊啊啊啊啊</h4><p><a href="">https://console.firebase.google.com/project/schacker-pwa/notification</a><br><a href="">https://developers.google.com/web/fundamentals/engage-and-retain/push-notifications/subscribing-a-user</a></p>
-<p>对于 Push Notification，一是因为 Push API 还处于 Editor Draft 的状态，二是目前浏览器与推送服务的互相支持都还不够成熟：Android 上的 Chrome（与其它基于 Blink 的浏览器）目前只支持基于 Google 私有的 GCM/FCM 的通知推送，只有 Firefox 已经实现了成在由 IETF 进行标准化的 Web 推送协议（Web Push Protocol）。</p>
-<p>不过，如果你已经在使用 Google 的云服务（比如 Firebase），并且主要面向的是海外用户，那么在 Web 应用上支持基于 GCM/FCM 的推送通知并不是一件费力的事情。<br>对于<br>对于firebase推送这块，可以自己搭建服务器来调用Google SDK提供的API接口实现自定义推送，包括自己的推送后台</p>
-<p><a href="">https://developers.google.com/web/fundamentals/engage-and-retain/push-notifications/sending-messages-with-web-push-libraries</a></p>
-<h2 id="有待挖掘"><a href="#有待挖掘" class="headerlink" title="有待挖掘"></a>有待挖掘</h2><p>使用技术 ep:<br>Ajax、响应式设计、JavaScript 框架、ECMAScript Next、CSS Next、Houdini、Indexed DB、Device APIs、Web Bluetooth、Web Socket、Web Payment、孵化中的 Background Sync API、Streams、WebVR</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right"></i></a>
+  </nav>
+
 
 
           </div>
@@ -1848,7 +1830,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">11</span>
                   <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
