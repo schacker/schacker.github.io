@@ -100,7 +100,7 @@
     motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
     duoshuo: {
       userId: '0',
-      author: 'Penulis'
+      author: 'Author'
     },
     algolia: {
       applicationID: '',
@@ -181,7 +181,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Beranda
+            Startseite
           </a>
         </li>
       
@@ -191,7 +191,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Arsip
+            Archiv
           </a>
         </li>
       
@@ -214,6 +214,139 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/27/rewrite与redirect区别/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/07/27/rewrite与redirect区别/" itemprop="url">rewrite与redirect区别</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-27T10:25:58+08:00">
+                2018-07-27
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>谈及这两个概念，通常会想到这应该是后端考虑的事情，但现在前端coder也需要关注这个，因为现在有个大前端概念，node中有这个概念，需要我们关注。<br>我们搞node中间层，会涉及到重写url和重定向，所有也就有了这两个。</p>
+<h3 id="rewrite和redirect的区别"><a href="#rewrite和redirect的区别" class="headerlink" title="rewrite和redirect的区别"></a>rewrite和redirect的区别</h3><h4 id="redirect，即重定向。"><a href="#redirect，即重定向。" class="headerlink" title="redirect，即重定向。"></a>redirect，即重定向。</h4><h4 id="rewrite，即重写，不仅仅可以实现redirect在url规则上的重定向，还可以直接重写请求到实际的文件以及更多附加功能。"><a href="#rewrite，即重写，不仅仅可以实现redirect在url规则上的重定向，还可以直接重写请求到实际的文件以及更多附加功能。" class="headerlink" title="rewrite，即重写，不仅仅可以实现redirect在url规则上的重定向，还可以直接重写请求到实际的文件以及更多附加功能。"></a>rewrite，即重写，不仅仅可以实现redirect在url规则上的重定向，还可以直接重写请求到实际的文件以及更多附加功能。</h4><h4 id="重定向和URL重写的具体区别："><a href="#重定向和URL重写的具体区别：" class="headerlink" title="重定向和URL重写的具体区别："></a>重定向和URL重写的具体区别：</h4><p>（1）关于重定向</p>
+<p>通过重定向，浏览器知道页面位置发生变化，从而改变地址栏显示的地址。</p>
+<p>通过重定向，搜索引擎意识到页面被移动了，从而更新搜索引擎索引，将原来失效的链接从搜索结果中移除。</p>
+<p>临时重定向(R=302)和永久重定向(R=301)都是亲搜索引擎的，是SEO的重要技术。</p>
+<p>redirect是浏览器和服务器发生两次请求，也就是服务器命令客户端“去访问某个页面”；</p>
+<p>redirect的URL需要传送到客户端。</p>
+<p>redirect是从一个地址跳转到另一个地址。</p>
+<p>（2）关于重写</p>
+<p>rewrite的URL只是在服务器端</p>
+<p>rewrite则是服务器内部的一个接管，在服务器内部告诉“某个页面请帮我处理这个用户的请求”，浏览器和服务器只发生一次交互，浏览器不知道是该页面做的响应，浏览器只是向服务器发出一个请求。</p>
+<p>URL重写用于将页面映射到本站另一页面，若重写到另一网络主机（域名），则按重定向处理。</p>
+<p>rewrite是把一个地址重写成另一个地址。地址栏不跳转。相当于给另一个地址加了一个别名一样。</p>
+<p>上述的例子就像用户去买手机，缺货时的两种处理：让用户自己去其他地方买（redirect）；公司从其他的地方调货（rewrite）。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -257,7 +390,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Diposting di</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-01T17:36:40+08:00">
                 2018-07-01
@@ -392,7 +525,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Diposting di</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-06-24T08:43:55+08:00">
                 2018-06-24
@@ -526,7 +659,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Diposting di</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-04T11:25:15+08:00">
                 2018-05-04
@@ -674,7 +807,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Diposting di</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-04-23T21:10:23+08:00">
                 2018-04-23
@@ -832,7 +965,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Diposting di</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-22T10:19:23+08:00">
                 2018-03-22
@@ -992,7 +1125,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Diposting di</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-13T17:52:39+08:00">
                 2018-03-13
@@ -1170,7 +1303,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Diposting di</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-09T11:06:51+08:00">
                 2018-03-09
@@ -1311,7 +1444,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Diposting di</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:28:56+08:00">
                 2018-03-08
@@ -1435,7 +1568,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Diposting di</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:00:18+08:00">
                 2018-03-08
@@ -1524,267 +1657,6 @@ Microtasks Macrotasks
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/08/databinding/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="schacker">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜鸟的逆袭">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/08/databinding/" itemprop="url">databinding</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Diposting di</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T14:55:14+08:00">
-                2018-03-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>很多的前端框架都支持数据双向绑定了，最近正好在看双向绑定的实现，就用Javascript写了几个简单的例子。</p>
-<p>几个例子中尝试使用了下面的方式实现双向绑定：</p>
-<ol>
-<li>发布/订阅模式</li>
-<li>属性劫持</li>
-<li>脏数据检测</li>
-</ol>
-<h3 id="发布-订阅模式"><a href="#发布-订阅模式" class="headerlink" title="发布/订阅模式"></a>发布/订阅模式</h3><p>实现数据双向绑定最直接的方式就是使用PubSub模式：</p>
-<ul>
-<li>当model发生改变的时候，触发Model change事件，然后通过响应的事件处理函数更新界面</li>
-<li>当界面更新的时候，触发UI change事件， 然后通过相应的事件处理函数更新Model，以及绑定在Model上的其他界面控件</li>
-</ul>
-<p>根据这个思路，可以定义’ui-binding-event’和’model-binding-event’两个事件，然后针对Model和UI分别进行这两个事件订阅和发布。</p>
-<h4 id="UI更新"><a href="#UI更新" class="headerlink" title="UI更新"></a>UI更新</h4><p>对于所有支持双向绑定的页面控件，当控件的“值”发生改变的时候，就触发’ui-binding-event’，然后通过事件处理函数更新Model，以及绑定在Model上的其他界面控件</p>
-<p>处理控件“值”的改变，发布“ui-binding-event”事件，（这里只处理包含“lj-binding”属性的控件）：</p>
-<pre><code>// keyup和change事件处理函数
-function pageElementEventHandler(e) {
-    var target = e.target || e.srcElemnt;
-    var fullPropName = target.getAttribute(&apos;lj-binding&apos;);
-
-    if(fullPropName &amp;&amp; fullPropName !== &apos;&apos;) {
-        Pubsub.publish(&apos;ui-binding-event&apos;, fullPropName, target.value);
-    }
-
-}
-
-// 在页面上添加keyup和change的listener
-if(document.addEventListener) {
-    document.addEventListener(&apos;keyup&apos;, pageElementEventHandler, false);
-    document.addEventListener(&apos;change&apos;, pageElementEventHandler, false);
-} else {
-    document.attachEvent(&apos;onkeyup&apos;, pageElementEventHandler);
-    document.attachEvent(&apos;onchange&apos;, pageElementEventHandler);
-} 
-</code></pre><p>另外，对所有包含“lj-binding”属性的控件都订阅了“’model-binding-event”，也就是当Model变化的时候会收到相应的通知：</p>
-<pre><code>// 订阅model-binding-event事件, 根据Model对象的变化更新相关的UI
-Pubsub.subscrib(&apos;model-binding-event&apos;, function(fullPropName, propValue) {   
-    var elements = document.querySelectorAll(&apos;[lj-binding=&quot;&apos; + fullPropName + &apos;&quot;]&apos;);
-
-    for(var i = 0, len =elements.length; i &lt; len; i++){
-        var elementType = elements[i].tagName.toLowerCase();
-
-        if(elementType === &apos;input&apos; || elementType === &apos;textarea&apos; || elementType === &apos;select&apos;) {
-            elements[i].value = propValue;
-        } else {
-            elements[i].innerHTML = propValue;
-        }
-
-    }
-});    
-</code></pre><h4 id="Model更新"><a href="#Model更新" class="headerlink" title="Model更新"></a>Model更新</h4><p>对于Model这一层，当Model发生改变的时候，会发布“model-binding-event”：</p>
-<pre><code>// Model对象更新方法，更新对象的同时发布model-binding-event事件
-&apos;updateModelData&apos;: function(propName, propValue) {    
-    eval(this.modelName)[propName] =propValue;   
-    Pubsub.publish(&apos;model-binding-event&apos;, this.modelName + &apos;.&apos; + propName, propValue);
-}
-</code></pre><p>另外，Model订阅了“ui-binding-event”，相应的界面改动会更新Model</p>
-<pre><code>// 订阅ui-binding-event事件, 将UI的变化对应的更新Model对象
-Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) {
-    var propPathArr = fullPropName.split(&apos;.&apos;);
-    self.updateModelData(propPathArr[1], propValue);
-});
-</code></pre><p>有了这些代码，一个简单的双向绑定例子就可以运行起来了：</p>
-<blockquote>
-<ol>
-<li>初始状态<br><img src="https://cloud.githubusercontent.com/assets/5880320/18007454/b8b5892e-6bd6-11e6-9bfb-bf7a6c1a0458.PNG" alt="1 1"></li>
-</ol>
-</blockquote>
-<blockquote>
-<ol>
-<li>UI变化，Model会更新，绑定在Model上的其他控件也被更新<br><img src="https://cloud.githubusercontent.com/assets/5880320/18007447/b4967b50-6bd6-11e6-8f35-f13753e1b342.PNG" alt="1 2"></li>
-</ol>
-</blockquote>
-<blockquote>
-<ol>
-<li>通过”updateModelData”更新Model，绑定在Model上的控件被更新<br><img src="https://cloud.githubusercontent.com/assets/5880320/18007451/b64c3728-6bd6-11e6-825d-b4940628c4fb.PNG" alt="1 3"></li>
-</ol>
-</blockquote>
-<p><strong>完整的代码请参考<a href="https://github.com/schacker/databinding" target="_blank" rel="noopener">databinding:PubSub</a>。</strong></p>
-<h3 id="属性劫持"><a href="#属性劫持" class="headerlink" title="属性劫持"></a>属性劫持</h3><p>在“发布/订阅模式”实现双向绑定的例子中，为了保证Model的更新能够发布“model-binding-event”，对于Model对象的改变必须通过“updateModelData”方法。<br>也就是说，通过Javascript对象字面量直接更新对象就没有办法触发双向绑定。</p>
-<p>Javascript中提供了“Object.defineProperty”方法，通过这个方法可以对对象的属性进行定制。</p>
-<p>结合“Object.defineProperty”和“发布/订阅模式”，对Model属性的set方法进行重定义，将“model-binding-event”事件的发布直接放在Model属性的setter中：</p>
-<pre><code>&apos;defineObjProp&apos;: function(obj, propName, propValue) {
-    var self = this;
-
-    var _value = propValue || &apos;&apos;;
-
-    try {
-        Object.defineProperty(obj, propName, {
-            get: function() {
-                return _value; 
-            },
-
-            // 在对象属性的setter中添加model-binding-event事件发布动作
-            set: function(newValue) {
-                _value = newValue;
-                Pubsub.publish(&apos;model-binding-event&apos;, self.modelName + &apos;.&apos; + propName, newValue);
-            },
-            enumerable: true,
-            configurable: true
-        });
-
-        obj[propName] = _value;
-    } catch (error) {
-        alert(&quot;Browser must be IE8+ !&quot;);
-    }
-}
-</code></pre><p>这样，就可以使用对象字面量的方式直接对Model对象进行修改：   </p>
-<p><img src="https://cloud.githubusercontent.com/assets/5880320/18007450/b5b06a00-6bd6-11e6-8d2a-ab4933472736.PNG" alt="2"></p>
-<p><em>但是，对于IE8及以下浏览器仍需要使用其它方法来做hack。</em></p>
-<p><strong>完整的代码请参考<a href="https://github.com/schacker/databinding" target="_blank" rel="noopener">databinding:Hijacking</a>。</strong></p>
-<h3 id="脏数据检测"><a href="#脏数据检测" class="headerlink" title="脏数据检测"></a>脏数据检测</h3><p>对于AngularJS，是通过脏数据检测来实现双向绑定的，下面就仿照脏数据检测来实现一个简单的双向绑定。</p>
-<p>在这个例子中，作用域scope对象中会维护一个“watcher”数组，用来存放所以需要检测的表达式，以及对应的回调处理函数。</p>
-<p>对于所有需要检测的对象、属性，scope通过“watch”方法添加到“watcher”数组中：</p>
-<pre><code>Scope.prototype.watch = function(watchExp, callback) {
-    this.watchers.push({
-        watchExp: watchExp,
-        callback: callback || function() {}
-    });
-
-}
-</code></pre><p>当Model对象发生变化的时候，调用“digest”方法进行脏检测，如果发现脏数据，就调用对应的回调函数进行界面的更新：</p>
-<pre><code>Scope.prototype.digest = function() {
-    var dirty;
-
-    do { 
-        dirty = false;
-
-        for(var i = 0; i &lt; this.watchers.length; i++) {
-            var newVal = this.watchers[i].watchExp(),
-                oldVal = this.watchers[i].last;
-
-            if(newVal !== oldVal) {
-                this.watchers[i].callback(newVal, oldVal);
-                dirty = true;
-                this.watchers[i].last = newVal;
-            }
-        }
-    } while(dirty);
-
-}
-</code></pre><p><strong>完整的代码请参考<a href="https://github.com/schacker/databinding" target="_blank" rel="noopener">databinding:Digest</a>。</strong></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1835,14 +1707,23 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">11</span>
-                  <span class="site-state-item-name">posting</span>
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
 
             
 
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">Tags</span>
+                
+              </div>
             
 
           </nav>
@@ -1886,7 +1767,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
@@ -1894,7 +1775,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
 
 
 
-  <div class="theme-info">Tema &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
 
 
 
