@@ -181,7 +181,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -191,7 +191,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -214,6 +214,137 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/08/js引擎执行过程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/03/08/js引擎执行过程/" itemprop="url">js引擎执行过程</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:00:18+08:00">
+                2018-03-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="分析一段代码的创建执行过程"><a href="#分析一段代码的创建执行过程" class="headerlink" title="分析一段代码的创建执行过程"></a>分析一段代码的创建执行过程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">var y = 10;</span><br><span class="line">function test()&#123;</span><br><span class="line">    var y = 2;</span><br><span class="line">    return function()&#123;</span><br><span class="line">        alert(y);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">var fun = test();</span><br><span class="line">fun();</span><br></pre></td></tr></table></figure>
+<p>对于上述代码的执行过程:<br>在执行全局代码前，创建全局上下文即：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">globalEC = &#123;</span><br><span class="line">    this: window,</span><br><span class="line">    vo: window,</span><br><span class="line">    sc: [winodw]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>注：凡是创建上下文，总会有三个属性，this、vo、sc。<br>接下来进行变量实例化：在变量实例化时所有变量均为undefined，同时会创建test函数（testFun），由于在函数创建时确定函数的scope，<br>而函数的scope为函数创建时所在上下文的作用域链，testFun函数是在全局上下文中创建，所以testFun[[scope]]为globalEC.sc——[window]<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: undefined,</span><br><span class="line">    fun: undefined,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>全局代码执行：<br>首先 var y = 10; window的y属性由undefined变为10<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: 10,</span><br><span class="line">    fun: undefined,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>接下来到 var fun = test();<br>执行test函数时，创建test函数的函数上下文即：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">testEC = &#123;</span><br><span class="line">    this: window,</span><br><span class="line">    vo: testAO,</span><br><span class="line">    sc: [testAO, testFun.[[scope]]] = [testAO, window]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>注：函数上下文的作用域链始终包含两个元素，当前激活对象和当前函数的[[scope]]。<br>激活对象就是testAO，而函数的[[scope]]则是当前函数创建时所在的上下文的作用域链，所以testEC的作用域链为[testAO,window]。<br>接下来变量实例化：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">testAO: &#123;</span><br><span class="line">  y: undefined</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>实例化后接着函数代码执行:<br>首先var y = 2;  testAO.y值由undefined 变为 2<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">testAO: &#123;</span><br><span class="line">  y: 2</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>接着执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">return function()&#123;        </span><br><span class="line">   alert(y);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>创建匿名函数nFun：上面说到了创建函数的时候回确定函数的[[scope]]，由于它是在test函数中创建的，所以nFun[[scope]] = testEC.sc = [testAO, window]</p>
+<p>执行完fun = test()后，fun由undefined变为nFun<br>全局上下文中的变量对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: 10,</span><br><span class="line">    fun: nFun,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>接着执行fun();<br>前面说到了在函数执行之前，会创建函数上下文：它是在test函数中被创建的，所以nFun的作用域链为当前激活对象+test函数的上下文的作用域链。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">nFunEC = &#123;</span><br><span class="line">   this: window,</span><br><span class="line">   vo: nAO,</span><br><span class="line">   sc: [nAO, nFun[[scope]]] = [nAO, testAO, window]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最后执行alert(y)<br>从nFunEC.sc中查找y<br>在testAO中找到且值为2</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -257,7 +388,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T14:55:14+08:00">
                 2018-03-08
@@ -518,7 +649,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T14:26:10+08:00">
                 2018-03-08
@@ -684,8 +815,8 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">12</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -698,7 +829,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
               <div class="site-state-item site-state-tags">
                 
                   <span class="site-state-item-count">1</span>
-                  <span class="site-state-item-name">Tags</span>
+                  <span class="site-state-item-name">tags</span>
                 
               </div>
             
@@ -744,7 +875,7 @@ Pubsub.subscrib(&apos;ui-binding-event&apos;, function(fullPropName, propValue) 
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

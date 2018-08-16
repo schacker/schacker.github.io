@@ -181,7 +181,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -191,7 +191,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -214,6 +214,250 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/16/bucky-core原理及实现细节/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/08/16/bucky-core原理及实现细节/" itemprop="url">bucky-core原理及实现细节</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-16T10:15:27+08:00">
+                2018-08-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="bucky基本原理"><a href="#bucky基本原理" class="headerlink" title="bucky基本原理"></a>bucky基本原理</h3><h4 id="挂载hooks文件"><a href="#挂载hooks文件" class="headerlink" title="挂载hooks文件"></a>挂载<code>hooks</code>文件</h4><blockquote>
+<p>包含<code>error, config, bodyparser, formparser, rewrite, log, csrf, cors, response, view, static, context, mysql, redis, api, model, service, action, socket, lift</code>，二十个模块定义APP错误日志，监听启动错误日志</p>
+</blockquote>
+<h4 id="config配置"><a href="#config配置" class="headerlink" title="config配置"></a><code>config</code>配置</h4><blockquote>
+<p><code>config</code>业务配置，模块会传入APP实例，app参数配置，但这个时候 <code>app.config</code> 上只有<code>appPath</code>，获取用户<code>config</code>配置路径，挂载 <code>package.json</code> 信息<br><code>ignoreConfigFiles</code>是否忽略配置，挂在<code>lodash</code>，并将<code>_</code>.js挂入忽略配置数组<br>尝试获取<code>env.js</code>下的配置，包含当前node环境</p>
+</blockquote>
+<blockquote>
+<p>抓取<code>configs/*.js</code>文件，排除忽略的配置，获取对应文件的文件路径，必须先加载<code>app.js</code>，<code>loadConfig</code>做深度merge当前环境，再delete app路径防止重复加载，<code>proxy</code>设置，然后加载其他config文件，加载文件的时候有错则放入<code>app.initErrors</code>里。</p>
+</blockquote>
+<blockquote>
+<p>如果存在socket文件且开启socket，启动http服务</p>
+</blockquote>
+<blockquote>
+<p>中间件：代理请求头，重置或重写代理请求头</p>
+</blockquote>
+<blockquote>
+<p>中间件：设置请求头<code>uuid</code>和<code>sequence</code></p>
+</blockquote>
+<h4 id="bodyparser配置"><a href="#bodyparser配置" class="headerlink" title="bodyparser配置"></a><code>bodyparser</code>配置</h4><blockquote>
+<p>获取在<code>config</code>加载阶段挂载到<code>app.config</code>上的<code>bodyparser</code><br>主要是设置解析请求body的参数，比如上传文件大小限制等等</p>
+</blockquote>
+<blockquote>
+<p>中间件：<code>bodyparser</code></p>
+</blockquote>
+<h4 id="formparser配置"><a href="#formparser配置" class="headerlink" title="formparser配置"></a><code>formparser</code>配置</h4><blockquote>
+<p>获取在config加载阶段挂载到<code>app.config</code>上的<code>formparser</code></p>
+</blockquote>
+<blockquote>
+<p>中间件：处理表单文件内容和文件内容，将表单数据挂载到ctx</p>
+</blockquote>
+<h4 id="rewrite配置"><a href="#rewrite配置" class="headerlink" title="rewrite配置"></a><code>rewrite</code>配置</h4><blockquote>
+<p>获取在config加载阶段挂载到<code>app.config</code>上的<code>rewrite</code></p>
+</blockquote>
+<blockquote>
+<p>中间件：处理用户自定义<code>rewrite</code>规则，这里会用到两个处理规则函数，<code>match</code>和<code>makeTo</code>，<code>match</code>处理匹配命中规则，<code>from</code>规则支持正则、函数、字符串，正则也就是整儿白净的正则，函数的话，会给函数传入请求头部信息，返回非<code>null</code>则认为是匹配成功，并返回匹配数组。字符串则使用<code>minimatch</code>规则，<code>minimatch</code>这里面可能有个坑，比如你想转一个路由，比如<code>a/b=&gt;a/b/</code>这种，那么<code>minimatch</code>会认为这两个是一样的<code>minimatch(&quot;a/b/&quot;, &quot;a/b&quot;)</code> // true!，<code>makeTo</code>处理跳转规则，<code>to</code>规则支持函数和字符串，函数则自行处理，字符串则替换字符串中的<code>${index}</code>为<code>match</code>规则中的数据，返回处理后数据，然后解析该<code>url</code>，合并<code>request</code>的<code>query</code>和替换<code>path</code>，也就是说路径可自定义，<code>query</code>参数为merge方式<br>获取在<code>config</code>加载阶段挂载到<code>app.config</code>上的<code>redirect</code></p>
+</blockquote>
+<blockquote>
+<p>中间件：处理用户自定义<code>redirect</code>规则，处理匹配规则经过<code>matchFrom</code>和<code>makeTo</code>处理，然后构造目标<code>url</code>，最后重定向这个目标<code>url</code></p>
+</blockquote>
+<h4 id="log配置"><a href="#log配置" class="headerlink" title="log配置"></a><code>log</code>配置</h4><blockquote>
+<p>写日志采用第三方库，<code>log4js</code></p>
+</blockquote>
+<p>中间件：触发<code>access</code>日志，并处理<code>input/output</code>两种情况<br>重写<code>console.log</code>和<code>console.error</code>，其中分别触发<code>application、error</code>日志</p>
+<h4 id="csrf配置"><a href="#csrf配置" class="headerlink" title="csrf配置"></a><code>csrf</code>配置</h4><blockquote>
+<p>跨站请求伪造，简单理解攻击者盗用了你的身份，以你的名义发送恶意请求<br>中间件：用来生成<code>csrf token</code></p>
+</blockquote>
+<h4 id="cors配置"><a href="#cors配置" class="headerlink" title="cors配置"></a><code>cors</code>配置</h4><p><code>https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Access_control_CORS</code></p>
+<blockquote>
+<p>中间件：每次请求都会重新绑定<code>cors</code>检测函数到本次请求的上下文上也就是·，然后在<code>action</code>执行的时候回检测是否有<code>action</code>的<code>cors</code>设置参数，有则检验并设置<code>cors</code>响应头</p>
+</blockquote>
+<blockquote>
+<p>设置<code>cors</code>参数支持函数、字符串、Bool类型，启用<code>cors</code>后设置响应头，<code>*</code>/用户自定义/<br>如果设置并非<code>*</code>，则头中必须设置<code>Vary</code>为<code>Origin</code>，目地告诉客户端服务端对不同源返回不同内容</p>
+</blockquote>
+<blockquote>
+<p>设置<code>headers</code>，将请求中设置<code>headers</code>，作为相应头的<code>headers</code>传回，请求的<code>headers</code>会作为预检请求的<code>headers</code>，目前告诉服务器实际请求使用的<code>headers</code>，同理告诉客户端实际允许的<code>headers</code></p>
+</blockquote>
+<blockquote>
+<p>设置<code>methods</code>，同理<code>headers</code></p>
+</blockquote>
+<blockquote>
+<p>设置<code>expose-headers</code>，在跨域请求中，<code>xhr</code>对象中<code>getResponseHeader()</code>只能获取基本的响应头，<code>cache-control、content-language、content-type、expires、last-modified、pragma</code>，访问其他头需要服务端设置响应头<code>expose-headers</code>白名单</p>
+</blockquote>
+<blockquote>
+<p>设置<code>max-age</code>，设置改参数表示<code>preflight</code>（预检）请求缓存多久有效</p>
+</blockquote>
+<blockquote>
+<p>设置<code>credentials</code>，表示当前浏览器的是否被允许读取<code>response</code>的内容，如果是预检请求中，则表示实际请求是否可以使用<code>credentials</code></p>
+</blockquote>
+<h4 id="response配置"><a href="#response配置" class="headerlink" title="response配置"></a><code>response</code>配置</h4><blockquote>
+<p>封装相应函数，<code>200、302、403、404、500</code>，同时支持自定义<code>response</code></p>
+</blockquote>
+<blockquote>
+<p>中间件：挂载上述封装方法</p>
+</blockquote>
+<blockquote>
+<p>中间件：挂载自定义方法到当前请求上下文，自定义<code>response</code>中，会传入事先挂载到<code>app.config</code>上的<code>response</code>配置</p>
+</blockquote>
+<h4 id="view配置"><a href="#view配置" class="headerlink" title="view配置"></a><code>view</code>配置</h4><blockquote>
+<p>获取当前用户view配置，模板类型，编译调试参数等<br>获取<code>views</code>模板匹配路由表，目前也就是让<code>/</code>映射到<code>/views/</code>下<br>构造<code>render</code>函数，<code>renderTemplate</code>函数，函数参数当前<code>appPath</code>、待匹配路由表，当前模板配置<br>取出当前配置参数，类型、数据、母模板、本次<code>render</code>类型，支持<code>ejs/pug</code>两种，支持缓存（<code>内存</code>），内部实现先查看是否有使用及有无缓存，有则返回，注意这里挂载内存上的是编译后的模板函数，不包含数据<br>构造真正的带数据模板，函数参数为是否<code>string、view</code>路径，数据，<code>viewConfig</code>（目前仅使用<code>layout</code>参数），构造<code>view</code>路径，数据（merge 本次data到全局data），然后拿构造的<code>view</code>路径去待匹配的路由表中查<code>view</code>文件，然后构造<code>view</code>文件路径，然后拿着<code>view</code>文件路径和数据data使用事先构造的模板函数进行编译，这个时候编译后的只是文档片段(html)，尚未使用，这个时候查是否有<code>layout</code>母模板，有则再匹配和编译一次，本次编译使用的数据为之前的<code>data</code>和<code>{body:html}</code>，最后将这些数据绑定到本次的请求上下文对象上，比如 <code>Object.assign(this.response, { type: &#39;html&#39;, body: html })</code>，这样也就完成了渲染</p>
+</blockquote>
+<blockquote>
+<p>中间件：将构造构造<code>render</code>函数绑定到<code>response</code>和本次请求上下文，两种方式字符串和文档</p>
+</blockquote>
+<h4 id="static配置"><a href="#static配置" class="headerlink" title="static配置"></a><code>static</code>配置</h4><blockquote>
+<p>首先还是merge用户和默认配置，生成<code>source_buffer</code>，生成<code>Static</code>对象，该对象提供几种获取文件方式参数，获取文件的<code>md5</code>值、获取文件的<code>buffer</code>类型数据（这里有缓存机制，即cache配置）、获取文本、获取<code>base64</code>类型</p>
+</blockquote>
+<blockquote>
+<p>构造<code>static</code>文件路由表，同时如果有<code>mix</code>配置则走<code>mix</code>文件，如果有<code>manifest</code>配置，则存到<code>Static.assets</code>，<code>assets</code>下存的是文件路径和<code>md5</code>后的映射关系，最后暴露<code>Static</code>到<code>global</code></p>
+</blockquote>
+<blockquote>
+<p>中间件：在缓存和<code>manifest</code>同时开启情况下，存<code>static</code>文件的<code>origin=&gt;source</code>关系，然后根据传入文件路径，返回指定类型的文件数据，这里会处理<code>etag、lastModified</code>，且默认是<code>*</code>跨域，<code>cache-control</code>时间默认10s，<code>expires</code>默认当前服务器时间+10s，在<code>query</code>中含<code>nocache&amp;request</code>含<code>fresh</code>（缓存是否新鲜），走<code>304</code></p>
+</blockquote>
+<h4 id="context配置"><a href="#context配置" class="headerlink" title="context配置"></a><code>context</code>配置</h4><blockquote>
+<p>中间件：据说是用来追踪请求用的。。。。</p>
+</blockquote>
+<h4 id="MySQL、Redis就不解释了，很简单"><a href="#MySQL、Redis就不解释了，很简单" class="headerlink" title="MySQL、Redis就不解释了，很简单"></a><code>MySQL、Redis</code>就不解释了，很简单</h4><h4 id="api配置"><a href="#api配置" class="headerlink" title="api配置"></a><code>api</code>配置</h4><blockquote>
+<p>首先还是merge用户和默认配置，这里得说明下，之前<code>bucky</code>是没有暴露<code>config.api</code>配置给用户的，三部曲中的只有<code>action</code>有用户配置，而且一般也不会改动，除非你的<code>action</code>里有共有的部分<br>然后拿着merge后的<code>config</code>创建<code>API</code>，参数中可设置的有<code>queryEncode</code>、<code>contentType</code>、<code>userAgent</code>、<code>requestHandler</code>、<code>responseHandler</code>、<code>cache</code>、<code>host</code>、<code>proxy</code>等，这些参数也可以在某类<code>API</code>中设置。</p>
+</blockquote>
+<blockquote>
+<p>这里首先会创建一个<code>API</code>类，该类为全局<code>API</code>对象，然后获取当前设置<code>api</code>根目录，其实也就是<code>apis/</code>，然后遍历<code>apis/</code>文件夹，拿到文件路径，然后解析（<code>requireAPI</code>）该<code>api</code>文件配置，里面包含解析文件的配置，配置包含默认环境配置、特殊环境配置，每一个环境中配置都是以函数形式，配置中<code>export</code>类型有三个环境，创建配置中会生成该<code>API</code>的<code>configMap</code>，存放<code>apiName</code>与<code>apiconfig</code>映射关系，然后执行该<code>API</code>文件中的注册<code>API</code>，然后生成<code>API</code>配置，然后深度merge两个环境的各自的基础配置和<code>configMap</code>（<code>APIName</code>与<code>APIConfig</code>映射关系），最后会merge每个<code>API</code>的<code>config</code>到<code>baseConfig</code>。然后会遍历这个总的<code>config</code>，里面包含这个<code>API</code>的所有配置，以及每个<code>api</code>的配置，生成<code>API.APIName.apiName</code>，这种格式，如<code>API.Test.test</code>，然后拿着这个和文件路径生成<code>API</code>（<code>createAPI</code>）<br><code>createAPI</code>里：首先解析每个<code>api</code>类的配置，这里的配置是某一个<code>api</code>配置和<code>API</code>基础配置的深度merge，最终返回的是一个api函数，也就是我们通常会调用的<code>API.Test.test(data,  options)</code>这种形式，函数里面干了什么事情呢，首先从<code>options</code>中解析四个参数，<code>query/headers/uriReplacer/ctx</code>，拿着前面解析的<code>parameters</code>做接口数据类型检查，然后创建<code>api</code>请求数据对象，包含<code>uri method timeout proxy displayname encoding headers</code>，<code>headers</code>中会使用每个<code>api</code>中的<code>contenttype</code>、<code>userAgent</code>、<code>host</code>然后merge传入的<code>headers</code>，所以<code>header</code>可以在<code>api</code>中设置。</p>
+</blockquote>
+<blockquote>
+<p>根据方法名，合并参数，包含<code>GET、HEAD、OPTIONS</code>三个，剩下处理<code>body</code>数据，<code>multipart/form-data</code>文件类型的表单提交，然后将<code>formData</code>写到上述创建的<code>api</code>请求数据对象中，<code>formData</code>中包含<code>data</code>里面的数据，如果是流<code>stream</code>类型，则设置<code>filename</code>和<code>contentType</code>；</p>
+</blockquote>
+<blockquote>
+<p><code>application/json</code>类型则直接设置body为<code>stringify(data)</code>后的数据；</p>
+</blockquote>
+<blockquote>
+<p><code>application/x-www-form-urlencoded</code>类型则设置<code>form</code>为<code>data</code>，其余类型则直接<code>data</code>挂到<code>body</code>。然后拼装<code>uri</code>，通过<code>base、uriReplacer</code>规则，然后将<code>query</code>对象转为<code>search</code>类型，此时通过<code>queryEncode</code>判断是否转码。<br>调用<code>requestHandler</code>，参数有创建的请求数据对象、<code>ctx</code>，这个时候需要注意，如果你的<code>requestHandler</code>是自定义的，那么需要注意，函数中需要返回你处理后的请求数据对象，然后bucky拿着处理后的请求数据对象，然后处理<code>cache</code>缓存，这里默认使用的是<code>Redis</code>，如果使用缓存且缓存有效则使用缓存的结果作为返回，反之发起请求<code>doRequest</code></p>
+</blockquote>
+<blockquote>
+<p><code>doRequest</code>中有递增请求<code>sequence</code>的操作，标识请求的唯一和连续，记录请求时间，请求使用<code>request</code>库，自己封装为<code>promise</code>方式，如果出错则抛出错误，并记录到<code>log.api</code>日志中，正常则调用<code>responseHandler</code>方法，同样报错则抛出错误，如果有<code>cache</code>设置则写到缓存，同时会直接返回这个<code>responseHandler</code>的处理结果<br>上述创建完成后，会将<code>api</code>和<code>apis</code>分别挂载到<code>apis</code>上和<code>API</code> 上，这里会重写<code>get</code>方法，避免被篡改</p>
+</blockquote>
+<p>特别注意：上述说到的<code>requestHandler</code>、<code>responseHandler</code>都提供有默认的，<code>defaultRequestHandler</code>简单的返回请求数据对象，<code>defaultResponseHandler</code>则会校验<code>statusCode</code>，解析<code>codeKey、dataKey、messageKey、successCode</code>，这里可以通过刚刚说到的<code>config</code>设置，然后会从返回的<code>body</code>中解析对应的字段，然后检查<code>successCode</code>，如果你的<code>body</code>中的<code>codeKey</code>对应的值和<code>successCode</code>不对应，则会抛出错误</p>
+<h4 id="model配置"><a href="#model配置" class="headerlink" title="model配置"></a><code>model</code>配置</h4><p><code>model</code>配置也是老套路，先解析挂载在<code>app.config</code>上的<code>model</code>配置，获取<code>model</code>的路径，然后加载自己的<code>model</code>，<code>HdicAuth、Utils、S3、WebShot</code>，然后挂载业务<code>model</code></p>
+<h4 id="service配置"><a href="#service配置" class="headerlink" title="service配置"></a><code>service</code>配置</h4><p><code>service</code>是用于拦截请求用的，粗糙点说就是在<code>action/model/api</code>之前会执行这个，这里可以拦截并处理这个请求，<code>service</code>采用中间件，首先加载内部的三个<code>service</code>，<code>appwebview、logviewer、login</code>，然后获取业务自定义的<code>service</code>，这里注意到有<code>service</code>各自的依赖<code>service</code></p>
+<h4 id="登录service配置"><a href="#登录service配置" class="headerlink" title="登录service配置"></a>登录<code>service</code>配置</h4><h4 id="appwebview配置"><a href="#appwebview配置" class="headerlink" title="appwebview配置"></a><code>appwebview</code>配置</h4><h4 id="logviewer配置"><a href="#logviewer配置" class="headerlink" title="logviewer配置"></a><code>logviewer</code>配置</h4><p>未完待续</p>
+<p><img src="https://note.youdao.com/yws/public/resource/b6294f3ba9422486ed7b102071ea432f/xmlnote/WEBRESOURCEc5e01eb699351d89913f614811a5e330/4979" alt="avatar"></p>
+<p>简单描述下：</p>
+<blockquote>
+<p>首先<code>bucky</code>作为中间层，处于业务<code>server</code>和<code>UI client</code>之间，同时作为应用服务器，里面模块主要包含上面罗列的模块</p>
+</blockquote>
+<blockquote>
+<p>我们称<code>client</code>为 <code>UI client</code>，也就是通常说的传统意义的前端客户端，然后到<code>bucky</code>，首先到<code>redirect</code>，判断是否服务重定向规则，符合则重写浏览器<code>url</code>并发起请求，接着判断是否符合<code>rewrite</code>重写规则，重定向和重写区别，简单讲，比如你想去商店买个面包，但这个商店没面包，但老板说我帮去另外商店找一个给你，这叫重写；如果老师直接让你去哪个商店买面包，这叫重定向。好了，说回来，如果符合<code>rewrite</code>规则，这个时候，<code>bucky</code>会帮你重写浏览器<code>uri</code>，但不会重新发起请求，然后到<code>services</code>层，如果你没有自定义的<code>service</code>，那就是走默认的三个<code>service</code>，如果有自定义的<code>service</code>，则会在<code>action</code>之前执行，所以我们某些时候会用<code>service</code>来做请求的拦截或单独处理不走<code>action</code>及后续逻辑，然后<code>action</code>中可以调用<code>model、api、redis、mysql</code>这些，然后我们在<code>action</code>（action中可能有很复杂的业务或数据处理）中返回这个请求，也就是到了上面的<code>response</code>模块，最后到<code>UI client</code>。上面还有一个模块<code>websocket</code>，<code>websocket</code>是很灵活的，可以和<code>client</code>双向或单向通信，比如我们的<code>logviewer</code>其实就是一个<code>websocket</code>，当然<code>websocket</code>里也照样可以调用<code>api</code> <code>model</code> 等模块。</p>
+</blockquote>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -257,7 +501,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-27T10:25:58+08:00">
                 2018-07-27
@@ -390,7 +634,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-01T17:36:40+08:00">
                 2018-07-01
@@ -525,7 +769,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-06-24T08:43:55+08:00">
                 2018-06-24
@@ -659,7 +903,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-04T11:25:15+08:00">
                 2018-05-04
@@ -807,7 +1051,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-04-23T21:10:23+08:00">
                 2018-04-23
@@ -965,7 +1209,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-22T10:19:23+08:00">
                 2018-03-22
@@ -1125,7 +1369,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-13T17:52:39+08:00">
                 2018-03-13
@@ -1303,7 +1547,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-09T11:06:51+08:00">
                 2018-03-09
@@ -1444,7 +1688,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:28:56+08:00">
                 2018-03-08
@@ -1491,137 +1735,6 @@ Microtasks Macrotasks
 <p>— 解：当代码执行foo.count=0；它确实在函数对象foo中加入了一个count属性，但函数内部this.count，this指向的根本不是函数对象，而是window，那么这个是个什么鬼，那window上的count就是正确的执行次数？不，并不是，这个count是全局变量，而且值是NaN，因为刚刚开始this.count值为undefined，这样加上数字就是NaN。<br>我们可以创建一个对象来持有这个count值。但这是避免了this的问题，这是一个我们便于理解的词法作用域。<br>注意：在函数中有一个老大但现在被废弃了，而arguments.callee引用也指向当前正在执行的函数的内部。这通常是匿名函数在内部自己访问函数对象的唯一方法，但最佳的是完全避免匿名函数。<br>还有一种使用函数对象来执行调用。另一种是强制指向函数对象，call调用就好。</p>
 <h2 id="误解2："><a href="#误解2：" class="headerlink" title="误解2："></a>误解2：</h2><p>this不知怎的指向了函数作用域。这种说法有错有对。<br>明确地说，this不会以任何方式指向函数的此法作用域。作用域好像是一个将所有可用标识符作为属性的对象，从内部看是对的。但JavaScript代码不能访问作用域对象，只是引擎内部实现。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">function foo()&#123;</span><br><span class="line">    var a = 2;</span><br><span class="line">    this.bar();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function() &#123;</span><br><span class="line">	console.log(this.a);</span><br><span class="line">&#125;</span><br><span class="line">foo();</span><br></pre></td></tr></table></figure></p>
 <p>— 执行结果无疑：undefined。<br>中间过程：这个代码不止一个错貌似还阔以执行。<br>首先，试图通过this.bar();来引用bar()函数。他几乎碰巧能够工作，调用bar最自然方式是避开this。代码想通过this来建立foo和bar之间的桥，使用bar可访问foo内部作用域的a。这样的桥是不可能的，使用this在词法作用域中查找东西，这是不可能的。<br>到底啥是this？<br>this不是编写时绑定，而是运行时绑定，依赖函数调用上下文。当函数被调用时，会建立一个活动记录，称为执行上下文环境。包含何处调用，参数等等，属性之一就是this。<br>this实际上是在函数调用时建立的绑定，它指向什么完全由函数被调用的调用点来决定。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/08/js引擎执行过程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="schacker">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜鸟的逆袭">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/08/js引擎执行过程/" itemprop="url">js引擎执行过程</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Veröffentlicht am</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:00:18+08:00">
-                2018-03-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="分析一段代码的创建执行过程"><a href="#分析一段代码的创建执行过程" class="headerlink" title="分析一段代码的创建执行过程"></a>分析一段代码的创建执行过程</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">var y = 10;</span><br><span class="line">function test()&#123;</span><br><span class="line">    var y = 2;</span><br><span class="line">    return function()&#123;</span><br><span class="line">        alert(y);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">var fun = test();</span><br><span class="line">fun();</span><br></pre></td></tr></table></figure>
-<p>对于上述代码的执行过程:<br>在执行全局代码前，创建全局上下文即：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">globalEC = &#123;</span><br><span class="line">    this: window,</span><br><span class="line">    vo: window,</span><br><span class="line">    sc: [winodw]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>注：凡是创建上下文，总会有三个属性，this、vo、sc。<br>接下来进行变量实例化：在变量实例化时所有变量均为undefined，同时会创建test函数（testFun），由于在函数创建时确定函数的scope，<br>而函数的scope为函数创建时所在上下文的作用域链，testFun函数是在全局上下文中创建，所以testFun[[scope]]为globalEC.sc——[window]<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: undefined,</span><br><span class="line">    fun: undefined,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>全局代码执行：<br>首先 var y = 10; window的y属性由undefined变为10<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: 10,</span><br><span class="line">    fun: undefined,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接下来到 var fun = test();<br>执行test函数时，创建test函数的函数上下文即：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">testEC = &#123;</span><br><span class="line">    this: window,</span><br><span class="line">    vo: testAO,</span><br><span class="line">    sc: [testAO, testFun.[[scope]]] = [testAO, window]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>注：函数上下文的作用域链始终包含两个元素，当前激活对象和当前函数的[[scope]]。<br>激活对象就是testAO，而函数的[[scope]]则是当前函数创建时所在的上下文的作用域链，所以testEC的作用域链为[testAO,window]。<br>接下来变量实例化：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">testAO: &#123;</span><br><span class="line">  y: undefined</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>实例化后接着函数代码执行:<br>首先var y = 2;  testAO.y值由undefined 变为 2<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">testAO: &#123;</span><br><span class="line">  y: 2</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接着执行：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">return function()&#123;        </span><br><span class="line">   alert(y);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>创建匿名函数nFun：上面说到了创建函数的时候回确定函数的[[scope]]，由于它是在test函数中创建的，所以nFun[[scope]] = testEC.sc = [testAO, window]</p>
-<p>执行完fun = test()后，fun由undefined变为nFun<br>全局上下文中的变量对象<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vo:&#123;</span><br><span class="line">    y: 10,</span><br><span class="line">    fun: nFun,</span><br><span class="line">    test: testFun</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>接着执行fun();<br>前面说到了在函数执行之前，会创建函数上下文：它是在test函数中被创建的，所以nFun的作用域链为当前激活对象+test函数的上下文的作用域链。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">nFunEC = &#123;</span><br><span class="line">   this: window,</span><br><span class="line">   vo: nAO,</span><br><span class="line">   sc: [nAO, nFun[[scope]]] = [nAO, testAO, window]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>最后执行alert(y)<br>从nFunEC.sc中查找y<br>在testAO中找到且值为2</p>
 
           
         
@@ -1707,8 +1820,8 @@ Microtasks Macrotasks
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">12</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -1721,7 +1834,7 @@ Microtasks Macrotasks
               <div class="site-state-item site-state-tags">
                 
                   <span class="site-state-item-count">1</span>
-                  <span class="site-state-item-name">Tags</span>
+                  <span class="site-state-item-name">tags</span>
                 
               </div>
             
@@ -1767,7 +1880,7 @@ Microtasks Macrotasks
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
