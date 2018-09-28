@@ -181,7 +181,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -191,7 +191,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -214,6 +214,166 @@
           <div id="content" class="content">
             
   <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/28/webpack-plugins/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/28/webpack-plugins/" itemprop="url">webpack_plugins</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-28T15:15:19+08:00">
+                2018-09-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h3 id="webpack插件"><a href="#webpack插件" class="headerlink" title="webpack插件"></a>webpack插件</h3><h4 id="一个简单的-plugin"><a href="#一个简单的-plugin" class="headerlink" title="一个简单的 plugin"></a>一个简单的 <code>plugin</code></h4><p><code>plugin</code> 的实现可以是一个类，使用时传入相关配置来创建一个实例，然后放到配置的 <code>plugins</code> 字段中，而 <code>plugin</code> 实例中最重要的方法是 <code>apply</code>，该方法在 <code>webpack</code> <code>compiler</code> <code>安装插件时会被调用一次，apply</code> 接收 <code>webpack</code> <code>compiler</code> 对象实例的引用，你可以在 <code>compiler</code> 对象实例上注册各种事件钩子函数，来影响 <code>webpack</code> 的所有构建流程，以便完成更多其他的构建任务。</p>
+<p>下边的这个例子，是一个可以创建 <code>webpack</code> 构建文件列表 markdown 的 <code>plugin</code>，实现上相对简单，但呈现了一个 <code>webpack</code> <code>plugin</code> 的基本形态。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FileListPlugin</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(options) &#123;&#125;</span><br><span class="line"></span><br><span class="line">  apply(compiler) &#123;</span><br><span class="line">    <span class="comment">// 在 compiler 的 emit hook 中注册一个方法，当 webpack 执行到该阶段时会调用这个方法</span></span><br><span class="line">    compiler.hooks.emit.tap(<span class="string">'FileListPlugin'</span>, (compilation) =&gt; &#123;</span><br><span class="line">      <span class="comment">// 给生成的 markdown 文件创建一个简单标题</span></span><br><span class="line">      <span class="keyword">var</span> filelist = <span class="string">'In this build:\n\n'</span></span><br><span class="line"></span><br><span class="line">      <span class="comment">// 遍历所有编译后的资源，每一个文件添加一行说明</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">var</span> filename <span class="keyword">in</span> compilation.assets) &#123;</span><br><span class="line">        filelist += (<span class="string">'- '</span>+ filename +<span class="string">'\n'</span>)</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 将列表作为一个新的文件资源插入到 webpack 构建结果中</span></span><br><span class="line">      compilation.assets[<span class="string">'filelist.md'</span>] = &#123;</span><br><span class="line">        source: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> filelist</span><br><span class="line">        &#125;,</span><br><span class="line">        size: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> filelist.length</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = FileListPlugin</span><br></pre></td></tr></table></figure>
+<p>webpack 4.0 版本之前使用的是旧版本的 tapable，和新版本插件API有不少区别，基本注册事件一致，只是注册改变了。</p>
+<h4 id="开发和调试-plugin"><a href="#开发和调试-plugin" class="headerlink" title="开发和调试 plugin"></a>开发和调试 <code>plugin</code></h4><p>你要在本地开发和调试 webpack plugin 是很容易的一件事情，你只需要创建一个 js 代码文件，如同上述的例子一样，该文件对外暴露一个类，然后在 webpack 配置文件中引用这个文件的代码，照样运行 webpack 构建查看结果即可。大概的配置方式如下:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 假设我们上述那个例子的代码是 ./plugins/FileListPlugin 这个文件</span></span><br><span class="line"><span class="keyword">const</span> FileListPlugin = <span class="built_in">require</span>(<span class="string">'./plugins/FileListPlugin.js'</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="comment">// ... 其他配置</span></span><br><span class="line">  plugins: [</span><br><span class="line">    <span class="keyword">new</span> FileListPlugin(), <span class="comment">// 实例化这个插件，有的时候需要传入对应的配置</span></span><br><span class="line">  ],</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="webpack-中的事件钩子"><a href="#webpack-中的事件钩子" class="headerlink" title="webpack 中的事件钩子"></a>webpack 中的事件钩子</h4><p>重点关注的是webpack插件钩子，下面重点说下</p>
+<p>先来一波文档充充饥 <a href="https://webpack.docschina.org/api/compiler/#%E4%BA%8B%E4%BB%B6%E9%92%A9%E5%AD%90" target="_blank" rel="noopener">compiler事件钩子</a>和<a href="https://webpack.docschina.org/api/compilation/" target="_blank" rel="noopener">compilation事件钩子</a></p>
+<p>我们可以看到在事件钩子列表中看到，webpack 中会有相当多的事件钩子，基本覆盖了 webpack 构建流程中的每一个步骤，你可以在这些步骤都注册自己的处理函数，来添加额外的功能，这就是 webpack 提供的 plugin 扩展</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.hooks = &#123;</span><br><span class="line">  <span class="comment">// 这里的声明的事件钩子函数接收的参数是 compilation，</span></span><br><span class="line">  shouldEmit: <span class="keyword">new</span> SyncBailHook([<span class="string">"compilation"</span>]),</span><br><span class="line">  <span class="comment">// 这里接收的参数是 stats，以此类推</span></span><br><span class="line">  done: <span class="keyword">new</span> AsyncSeriesHook([<span class="string">"stats"</span>]),</span><br><span class="line">  additionalPass: <span class="keyword">new</span> AsyncSeriesHook([]),</span><br><span class="line">  beforeRun: <span class="keyword">new</span> AsyncSeriesHook([<span class="string">"compilation"</span>]),</span><br><span class="line">  run: <span class="keyword">new</span> AsyncSeriesHook([<span class="string">"compilation"</span>]),</span><br><span class="line">  emit: <span class="keyword">new</span> AsyncSeriesHook([<span class="string">"compilation"</span>]),</span><br><span class="line">  afterEmit: <span class="keyword">new</span> AsyncSeriesHook([<span class="string">"compilation"</span>]),</span><br><span class="line">  thisCompilation: <span class="keyword">new</span> SyncHook([<span class="string">"compilation"</span>, <span class="string">"params"</span>]),</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>上面是webpack事件钩子申明的方式，可以看到有很多类型的事件钩子，从这里你可以看到各个事件钩子函数接收的参数是什么，你还会发现事件钩子会有不同的类型，例如 SyncBailHook，AsyncSeriesHook，SyncHook，接下来我们再介绍一下事件钩子的类型以及我们可以如何更好地利用各种事件钩子的类型来开发我们需要的 plugin。</p>
+<h4 id="了解事件钩子类型"><a href="#了解事件钩子类型" class="headerlink" title="了解事件钩子类型"></a>了解事件钩子类型</h4><p>上述提到的 webpack compiler 中使用了多种类型的事件钩子，根据其名称就可以区分出是同步还是异步的，对于同步的事件钩子来说，注册事件的方法只有 tap 可用，例如上述的 shouldEmit 应该这样来注册事件函数的</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">apply(compiler) &#123;</span><br><span class="line">  compiler.hooks.shouldEmit.tap(<span class="string">'PluginName'</span>, (compilation) =&gt; &#123; <span class="comment">/* ... */</span> &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但如果是异步的事件钩子，那么可以使用 tapPromise 或者 tapAsync 来注册事件函数，tapPromise 要求方法返回 Promise 以便处理异步，而 tapAsync 则是需要用 callback 来返回结果，例如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">compiler.hooks.done.tapPromise(<span class="string">'PluginName'</span>, (stats) =&gt; &#123;</span><br><span class="line">  <span class="comment">// 返回 promise</span></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 这个例子是写一个记录 stats 的文件</span></span><br><span class="line">    fs.writeFile(<span class="string">'path/to/file'</span>, stats.toJson(), (err) =&gt; err ? reject(err) : resolve())</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 或者</span></span><br><span class="line">compiler.hooks.done.tapAsync(<span class="string">'PluginName'</span>, (stats, callback) =&gt; &#123;</span><br><span class="line">  <span class="comment">// 使用 callback 来返回结果</span></span><br><span class="line">  fs.writeFile(<span class="string">'path/to/file'</span>, stats.toJson(), (err) =&gt; callback(err))</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 如果插件处理中没有异步操作要求的话，也可以用同步的方式</span></span><br><span class="line">compiler.hooks.done.tap(<span class="string">'PluginName'</span>, (stats, callback) =&gt; &#123;</span><br><span class="line">  callback(fs.writeFileSync(<span class="string">'path/to/file'</span>, stats.toJson())</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>然而 <a href="https://github.com/webpack/tapable" target="_blank" rel="noopener">tapable</a> 这个工具库提供的钩子类型远不止这几种，多样化的钩子类型，主要是为了能够覆盖多种使用场景：</p>
+<ol>
+<li><p>连续地执行注册的事件函数</p>
+</li>
+<li><p>并行地执行注册的事件函数</p>
+</li>
+<li><p>一个接一个地执行注册的事件函数，从前边的事件函数获取输入，即瀑布流的方式<br>异步地执行注册的事件函数</p>
+</li>
+<li><p>在允许时停止执行注册的事件函数，一旦一个方法返回了一个非 undefined 的值，<br>就跳出执行流</p>
+</li>
+</ol>
+<p>除了同步和异步的区别，我们再参考上述这一些使用场景，以及官方文档的 <a href="https://webpack.docschina.org/api/plugins/#tapable-%E5%92%8C-tapable-%E5%AE%9E%E4%BE%8B" target="_blank" rel="noopener">Plugin API</a>，进一步将事件钩子类型做一个区分。</p>
+<p>名称带有 <code>parallel</code> 的，注册的事件函数会并行调用，如：</p>
+<blockquote>
+<p><code>AsyncParallelHook</code>、<code>AsyncParallelBailHook</code></p>
+</blockquote>
+<p>名称带有 <code>bail</code> 的，注册的事件函数会被顺序调用，直至一个处理方法有返回值（ParallelBail 的事件函数则会并行调用，第一个返回值会被使用）：</p>
+<blockquote>
+<p><code>SyncBailHook</code>、<code>AsyncParallelBailHook</code>、<code>AsyncSeriesBailHook</code></p>
+</blockquote>
+<p>名称带有 <code>waterfall</code> 的，每个注册的事件函数，会将上一个方法的返回结果作为输入参数，如：</p>
+<blockquote>
+<p><code>SyncWaterfallHook</code>、<code>AsyncSeriesWaterfallHook</code></p>
+</blockquote>
+<p>通过上面的名称可以看出，有一些类型是可以结合到一起的，如 AsyncParallelBailHook，这样它就具备了更加多样化的特性。</p>
+<p>了解了 webpack 中使用的各个事件钩子的类型，才能在开发 plugin 更好地去把握注册事件的输入和输出，同步和异步，来更好地完成我们想要的构建需求。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// plugin 的实现可以是一个类， 使用时传入相关配置来创建一个实例， 然后放到配置的 plugins 字段中， 而 plugin 实例中最重要的方法是 apply， </span></span><br><span class="line"><span class="comment">// 该方法在 webpack compiler 安装插件时会被调用一次，apply 接收 webpack compiler 对象实例的引用，</span></span><br><span class="line"><span class="comment">// 你可以在 compiler 对象实例上注册各种事件钩子函数，来影响 webpack 的所有构建流程， 以便完成更多其他的构建任务。</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> chalk = <span class="built_in">require</span>(<span class="string">'chalk'</span>)</span><br><span class="line"><span class="keyword">const</span> SyncHook = <span class="built_in">require</span>(<span class="string">'tapable'</span>).SyncHook;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> pluginName = <span class="string">'FileListPlugin'</span></span><br><span class="line"><span class="keyword">const</span> Log = <span class="function">(<span class="params">str, obj</span>) =&gt;</span> &#123;<span class="built_in">console</span>.log(chalk.blue(<span class="string">'\n'</span>+str));<span class="built_in">console</span>.log(obj, +<span class="string">'\n'</span>)&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FileListPlugin</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(options) &#123;</span><br><span class="line">    <span class="keyword">this</span>.options = options</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  apply(compiler) &#123;</span><br><span class="line">    <span class="keyword">if</span> (compiler.hooks.myCustomHook) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="built_in">Error</span>(<span class="string">'Already in use'</span>);</span><br><span class="line">    compiler.hooks.myCustomHook = <span class="keyword">new</span> SyncHook([<span class="string">'a'</span>, <span class="string">'b'</span>, <span class="string">'c'</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 在 compiler 的 emit hook 中注册一个方法，当 webpack 执行到该阶段时会调用这个方法</span></span><br><span class="line">    compiler.hooks.emit.tap(pluginName, (compilation) =&gt; &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">'emit'</span>)</span><br><span class="line">      compiler.hooks.myCustomHook.call(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>);</span><br><span class="line">      <span class="keyword">let</span> chunkslist = <span class="string">'In this build chunks:\n\n'</span></span><br><span class="line">      <span class="keyword">let</span> chunks = compilation.chunks</span><br><span class="line">      <span class="comment">// console.log('chunks', chunks)</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> chunkid <span class="keyword">of</span> chunks) &#123;</span><br><span class="line">        <span class="comment">// Log('chunkid', chunkid)</span></span><br><span class="line">        chunkslist += (<span class="string">'- '</span> + chunkid + <span class="string">'\n'</span>)</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 将 chunks 信息写下来</span></span><br><span class="line">      compilation.assets[<span class="string">'chunkslist.md'</span>] = &#123;</span><br><span class="line">        source: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> chunkslist</span><br><span class="line">        &#125;,</span><br><span class="line">        size: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> chunkslist.length</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">let</span> filelist = <span class="string">'In this build:\n\n'</span></span><br><span class="line">      <span class="comment">// 遍历所有编译后的资源，每一个文件添加一行说明</span></span><br><span class="line">      <span class="keyword">for</span> (<span class="keyword">let</span> filename <span class="keyword">in</span> compilation.assets) &#123;</span><br><span class="line">        filelist += (<span class="string">'- '</span> + filename + <span class="string">'\n'</span>)</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="comment">// 将列表作为一个新的文件资源插入到 webpack 构建结果中</span></span><br><span class="line">      compilation.assets[<span class="string">'filelist.md'</span>] = &#123;</span><br><span class="line">        source: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> filelist</span><br><span class="line">        &#125;,</span><br><span class="line">        size: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> filelist.length</span><br><span class="line">        &#125;,</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    compiler.hooks.compile.tap(pluginName, (compilation) =&gt; &#123;</span><br><span class="line">      Log(<span class="string">'compile'</span>, compilation.chunks)</span><br><span class="line">    &#125;)</span><br><span class="line">    compiler.hooks.compilation.tap(pluginName, (compilation) =&gt; &#123;</span><br><span class="line">      <span class="comment">// Log('compilation', compilation.chunks)</span></span><br><span class="line">      compilation.hooks.optimize.tap(pluginName, (coms) =&gt; &#123;</span><br><span class="line">        Log(<span class="string">'compilation.hooks'</span>, coms)</span><br><span class="line">      &#125;)</span><br><span class="line">    &#125;)</span><br><span class="line">    compiler.hooks.done.tap(pluginName, (compilation) =&gt; &#123;</span><br><span class="line">      Log(<span class="string">'done'</span>, compilation.chunks)</span><br><span class="line">    &#125;)</span><br><span class="line">    compiler.hooks.failed.tap(pluginName, (compilation) =&gt; &#123;</span><br><span class="line">      Log(<span class="string">'failed'</span>, compilation.chunks)</span><br><span class="line">    &#125;)</span><br><span class="line">    compiler.hooks.afterEmit.tap(pluginName, (compilation) =&gt; &#123;</span><br><span class="line">      Log(<span class="string">'afterEmit'</span>, compilation.chunks.length)</span><br><span class="line">    &#125;)</span><br><span class="line">    compiler.hooks.run.tapAsync(pluginName, (compilation,callback) =&gt; &#123;</span><br><span class="line">      Log(<span class="string">'run'</span>, compilation.chunks)</span><br><span class="line">      callback()</span><br><span class="line">    &#125;)</span><br><span class="line">    compiler.hooks[<span class="string">'watchRun'</span>].tap(pluginName, (compilation) =&gt; &#123;</span><br><span class="line">      Log(<span class="string">'watchRun'</span>, compilation.chunks)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = FileListPlugin</span><br></pre></td></tr></table></figure>
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
     
       
 
@@ -257,7 +417,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-16T10:15:27+08:00">
                 2018-08-16
@@ -415,7 +575,10 @@
 <p>特别注意：上述说到的<code>requestHandler</code>、<code>responseHandler</code>都提供有默认的，<code>defaultRequestHandler</code>简单的返回请求数据对象，<code>defaultResponseHandler</code>则会校验<code>statusCode</code>，解析<code>codeKey、dataKey、messageKey、successCode</code>，这里可以通过刚刚说到的<code>config</code>设置，然后会从返回的<code>body</code>中解析对应的字段，然后检查<code>successCode</code>，如果你的<code>body</code>中的<code>codeKey</code>对应的值和<code>successCode</code>不对应，则会抛出错误</p>
 <h4 id="model配置"><a href="#model配置" class="headerlink" title="model配置"></a><code>model</code>配置</h4><p><code>model</code>配置也是老套路，先解析挂载在<code>app.config</code>上的<code>model</code>配置，获取<code>model</code>的路径，然后加载自己的<code>model</code>，<code>HdicAuth、Utils、S3、WebShot</code>，然后挂载业务<code>model</code></p>
 <h4 id="service配置"><a href="#service配置" class="headerlink" title="service配置"></a><code>service</code>配置</h4><p><code>service</code>是用于拦截请求用的，粗糙点说就是在<code>action/model/api</code>之前会执行这个，这里可以拦截并处理这个请求，<code>service</code>采用中间件，首先加载内部的三个<code>service</code>，<code>appwebview、logviewer、login</code>，然后获取业务自定义的<code>service</code>，这里注意到有<code>service</code>各自的依赖<code>service</code></p>
-<h4 id="登录service配置"><a href="#登录service配置" class="headerlink" title="登录service配置"></a>登录<code>service</code>配置</h4><h4 id="appwebview配置"><a href="#appwebview配置" class="headerlink" title="appwebview配置"></a><code>appwebview</code>配置</h4><h4 id="logviewer配置"><a href="#logviewer配置" class="headerlink" title="logviewer配置"></a><code>logviewer</code>配置</h4><p>未完待续</p>
+<h4 id="登录service配置"><a href="#登录service配置" class="headerlink" title="登录service配置"></a>登录<code>service</code>配置</h4><p>目前service中包含三个service，login、appwebview、logviewer，三个模块中需要重点说明的是login模块，目前login模块中包含三种方式，分别为cas（uc最新提供的登录方式）、general（原UC登录方式）、hdic（楼盘字典登录），目前使用率最高的为general，部分用cas，hdic就一个，下面简单说明集成方式。</p>
+<p>首先login/index.js中export一个函数，该函数管理（校验）三种登录方式。</p>
+<p>接着看general方式，首先有部分基础配置<code>appWebViewLoginScript</code>、URL_BASE</p>
+<h4 id="appwebview配置"><a href="#appwebview配置" class="headerlink" title="appwebview配置"></a><code>appwebview</code>配置</h4><h4 id="logviewer配置"><a href="#logviewer配置" class="headerlink" title="logviewer配置"></a><code>logviewer</code>配置</h4><p>未完待续</p>
 <p><img src="https://note.youdao.com/yws/public/resource/b6294f3ba9422486ed7b102071ea432f/xmlnote/WEBRESOURCEc5e01eb699351d89913f614811a5e330/4979?ynotemdtimestamp=1535694981361" alt="avatar"></p>
 <p>简单描述下：</p>
 <blockquote>
@@ -501,7 +664,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-27T10:25:58+08:00">
                 2018-07-27
@@ -634,7 +797,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-01T17:36:40+08:00">
                 2018-07-01
@@ -769,7 +932,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-06-24T08:43:55+08:00">
                 2018-06-24
@@ -903,7 +1066,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-05-04T11:25:15+08:00">
                 2018-05-04
@@ -1051,7 +1214,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-04-23T21:10:23+08:00">
                 2018-04-23
@@ -1209,7 +1372,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-22T10:19:23+08:00">
                 2018-03-22
@@ -1369,7 +1532,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-13T17:52:39+08:00">
                 2018-03-13
@@ -1547,7 +1710,7 @@ Microtasks Macrotasks
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-09T11:06:51+08:00">
                 2018-03-09
@@ -1646,130 +1809,6 @@ Microtasks Macrotasks
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/03/08/this的理解/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="schacker">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="菜鸟的逆袭">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/03/08/this的理解/" itemprop="url">this的理解</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-03-08T21:28:56+08:00">
-                2018-03-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>this没有明确的定义，也就意味着this是在运行时确定的，不是在定义时确定的。</p>
-<h2 id="误解1："><a href="#误解1：" class="headerlink" title="误解1："></a>误解1：</h2><p>指向函数自身，看上去很合理。<br>常用的递归，在函数内部调用自己活是一个在第一次被调用时会解除自己绑定的事件处理器。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">function foo(num)&#123;</span><br><span class="line">	console.log(“foo:”+ num);</span><br><span class="line">	this.count++;</span><br><span class="line">&#125;</span><br><span class="line">foo.count = 0;</span><br><span class="line">for (var i =0;i &lt; 10;i++) &#123;</span><br><span class="line">	if (i &gt; 5) &#123;</span><br><span class="line">		foo(i);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line">console.log(foo.count); //0  这TM是怎么回事。。。？</span><br></pre></td></tr></table></figure></p>
-<p>— 解：当代码执行foo.count=0；它确实在函数对象foo中加入了一个count属性，但函数内部this.count，this指向的根本不是函数对象，而是window，那么这个是个什么鬼，那window上的count就是正确的执行次数？不，并不是，这个count是全局变量，而且值是NaN，因为刚刚开始this.count值为undefined，这样加上数字就是NaN。<br>我们可以创建一个对象来持有这个count值。但这是避免了this的问题，这是一个我们便于理解的词法作用域。<br>注意：在函数中有一个老大但现在被废弃了，而arguments.callee引用也指向当前正在执行的函数的内部。这通常是匿名函数在内部自己访问函数对象的唯一方法，但最佳的是完全避免匿名函数。<br>还有一种使用函数对象来执行调用。另一种是强制指向函数对象，call调用就好。</p>
-<h2 id="误解2："><a href="#误解2：" class="headerlink" title="误解2："></a>误解2：</h2><p>this不知怎的指向了函数作用域。这种说法有错有对。<br>明确地说，this不会以任何方式指向函数的此法作用域。作用域好像是一个将所有可用标识符作为属性的对象，从内部看是对的。但JavaScript代码不能访问作用域对象，只是引擎内部实现。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">function foo()&#123;</span><br><span class="line">    var a = 2;</span><br><span class="line">    this.bar();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function() &#123;</span><br><span class="line">	console.log(this.a);</span><br><span class="line">&#125;</span><br><span class="line">foo();</span><br></pre></td></tr></table></figure></p>
-<p>— 执行结果无疑：undefined。<br>中间过程：这个代码不止一个错貌似还阔以执行。<br>首先，试图通过this.bar();来引用bar()函数。他几乎碰巧能够工作，调用bar最自然方式是避开this。代码想通过this来建立foo和bar之间的桥，使用bar可访问foo内部作用域的a。这样的桥是不可能的，使用this在词法作用域中查找东西，这是不可能的。<br>到底啥是this？<br>this不是编写时绑定，而是运行时绑定，依赖函数调用上下文。当函数被调用时，会建立一个活动记录，称为执行上下文环境。包含何处调用，参数等等，属性之一就是this。<br>this实际上是在函数调用时建立的绑定，它指向什么完全由函数被调用的调用点来决定。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1820,8 +1859,8 @@ Microtasks Macrotasks
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">13</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -1833,8 +1872,8 @@ Microtasks Macrotasks
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">1</span>
-                  <span class="site-state-item-name">tags</span>
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">Tags</span>
                 
               </div>
             
@@ -1880,7 +1919,7 @@ Microtasks Macrotasks
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 

@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="菜鸟的逆袭">
 <meta property="og:description" content="bucky基本原理挂载hooks文件 包含error, config, bodyparser, formparser, rewrite, log, csrf, cors, response, view, static, context, mysql, redis, api, model, service, action, socket, lift，二十个模块定义APP错误日志，监听启动错误日志">
 <meta property="og:image" content="https://note.youdao.com/yws/public/resource/b6294f3ba9422486ed7b102071ea432f/xmlnote/WEBRESOURCEc5e01eb699351d89913f614811a5e330/4979?ynotemdtimestamp=1535694981361">
-<meta property="og:updated_time" content="2018-08-30T02:21:40.694Z">
+<meta property="og:updated_time" content="2018-09-18T04:10:50.162Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="bucky-core原理及实现细节">
 <meta name="twitter:description" content="bucky基本原理挂载hooks文件 包含error, config, bodyparser, formparser, rewrite, log, csrf, cors, response, view, static, context, mysql, redis, api, model, service, action, socket, lift，二十个模块定义APP错误日志，监听启动错误日志">
@@ -186,7 +186,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -196,7 +196,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -260,7 +260,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-08-16T10:15:27+08:00">
                 2018-08-16
@@ -416,7 +416,10 @@
 <p>特别注意：上述说到的<code>requestHandler</code>、<code>responseHandler</code>都提供有默认的，<code>defaultRequestHandler</code>简单的返回请求数据对象，<code>defaultResponseHandler</code>则会校验<code>statusCode</code>，解析<code>codeKey、dataKey、messageKey、successCode</code>，这里可以通过刚刚说到的<code>config</code>设置，然后会从返回的<code>body</code>中解析对应的字段，然后检查<code>successCode</code>，如果你的<code>body</code>中的<code>codeKey</code>对应的值和<code>successCode</code>不对应，则会抛出错误</p>
 <h4 id="model配置"><a href="#model配置" class="headerlink" title="model配置"></a><code>model</code>配置</h4><p><code>model</code>配置也是老套路，先解析挂载在<code>app.config</code>上的<code>model</code>配置，获取<code>model</code>的路径，然后加载自己的<code>model</code>，<code>HdicAuth、Utils、S3、WebShot</code>，然后挂载业务<code>model</code></p>
 <h4 id="service配置"><a href="#service配置" class="headerlink" title="service配置"></a><code>service</code>配置</h4><p><code>service</code>是用于拦截请求用的，粗糙点说就是在<code>action/model/api</code>之前会执行这个，这里可以拦截并处理这个请求，<code>service</code>采用中间件，首先加载内部的三个<code>service</code>，<code>appwebview、logviewer、login</code>，然后获取业务自定义的<code>service</code>，这里注意到有<code>service</code>各自的依赖<code>service</code></p>
-<h4 id="登录service配置"><a href="#登录service配置" class="headerlink" title="登录service配置"></a>登录<code>service</code>配置</h4><h4 id="appwebview配置"><a href="#appwebview配置" class="headerlink" title="appwebview配置"></a><code>appwebview</code>配置</h4><h4 id="logviewer配置"><a href="#logviewer配置" class="headerlink" title="logviewer配置"></a><code>logviewer</code>配置</h4><p>未完待续</p>
+<h4 id="登录service配置"><a href="#登录service配置" class="headerlink" title="登录service配置"></a>登录<code>service</code>配置</h4><p>目前service中包含三个service，login、appwebview、logviewer，三个模块中需要重点说明的是login模块，目前login模块中包含三种方式，分别为cas（uc最新提供的登录方式）、general（原UC登录方式）、hdic（楼盘字典登录），目前使用率最高的为general，部分用cas，hdic就一个，下面简单说明集成方式。</p>
+<p>首先login/index.js中export一个函数，该函数管理（校验）三种登录方式。</p>
+<p>接着看general方式，首先有部分基础配置<code>appWebViewLoginScript</code>、URL_BASE</p>
+<h4 id="appwebview配置"><a href="#appwebview配置" class="headerlink" title="appwebview配置"></a><code>appwebview</code>配置</h4><h4 id="logviewer配置"><a href="#logviewer配置" class="headerlink" title="logviewer配置"></a><code>logviewer</code>配置</h4><p>未完待续</p>
 <p><img src="https://note.youdao.com/yws/public/resource/b6294f3ba9422486ed7b102071ea432f/xmlnote/WEBRESOURCEc5e01eb699351d89913f614811a5e330/4979?ynotemdtimestamp=1535694981361" alt="avatar"></p>
 <p>简单描述下：</p>
 <blockquote>
@@ -458,6 +461,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/09/28/webpack-plugins/" rel="prev" title="webpack_plugins">
+                webpack_plugins <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -511,10 +518,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
+            Inhaltsverzeichnis
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
+            Übersicht
           </li>
         </ul>
       
@@ -534,8 +541,8 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">13</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-count">14</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -547,8 +554,8 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">1</span>
-                  <span class="site-state-item-name">tags</span>
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">Tags</span>
                 
               </div>
             
@@ -610,7 +617,7 @@
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
