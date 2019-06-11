@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="node_v8_metrics">
+<meta property="og:url" content="http://yoursite.com/2019/06/10/node-v8-metrics/index.html">
+<meta property="og:site_name" content="菜鸟的逆袭">
+<meta property="og:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/EEDD6D86E59B4B209EC468D45DAA0FE1/6020">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCEf08ab39a9603ea46e081ef85cd1ad59a/5986">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCE97aa6f5f60545b3487162ee02e2c218a/6010">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCE5a2834d9b2313bfb0446b8985afd390b/6013">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCEb432ed0f3ba86d2d65097d1fa0e15e83/6016">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/D28AC58CB6AC4269AC28E0C271A6D7DC/6018">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/DD4B05DF897243D58305540F4B77006B/6026">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/0681504A22D648B4A88CDA9728E8B098/6030">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/3DC318AD5F2E44109C7C2BE490CFCF1F/6028">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/6DE35BD1EFB34650A0DCC14E86E358B5/6032">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/B0D600F46EC84AE0B2EA62077044AE36/6034">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/22B677705A284D0B87C0A4DA9019E6D7/6036">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/9A5F41838121412093042EDBBA949FE9/6038">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/9CF730B61DDB43AF828E6AF4185B1D50/6040">
+<meta property="og:updated_time" content="2019-06-11T10:48:50.948Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="node_v8_metrics">
+<meta name="twitter:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
+<meta name="twitter:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/EEDD6D86E59B4B209EC468D45DAA0FE1/6020">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/06/10/node-v8-metrics/"/>
+
+
+
+
+
+  <title>node_v8_metrics | 菜鸟的逆袭</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">菜鸟的逆袭</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Startseite
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archiv
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/10/node-v8-metrics/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">node_v8_metrics</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Veröffentlicht am</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-10T10:19:06+08:00">
+                2019-06-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="node-v8-内存一二三"><a href="#node-v8-内存一二三" class="headerlink" title="node v8 内存一二三"></a>node v8 内存一二三</h1><h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><ul>
+<li><p>Node.js 进程的内存管理，都是有<code>V8</code>自动处理的，包括内存分配和释放。</p>
+</li>
+<li><p>在<code>V8</code>内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。</p>
+</li>
+<li><p>回收是一个过程性的，从快速<code>GC</code>到最后的<code>Full GC</code>，是需要一段时间的。另外，<code>Full GC</code>是有触发阈值的，所以可能会出现内存长期占用在一个高值，也可以算是一种内存泄漏。还有一种就是引用不释放，导致无法进入<code>GC</code>环节，并且一直产生新的占用，这一般会发生在<code>Javascript</code>业务层面。</p>
+</li>
+<li><p>定位内存泄漏，找有引用但不被使用</p>
+</li>
+</ul>
+<h2 id="V8-内存构成"><a href="#V8-内存构成" class="headerlink" title="V8 内存构成"></a><code>V8</code> 内存构成</h2><h3 id="一个-V8-进程的内存通常由以下几个块构成："><a href="#一个-V8-进程的内存通常由以下几个块构成：" class="headerlink" title="一个 V8 进程的内存通常由以下几个块构成："></a>一个 <code>V8</code> 进程的内存通常由以下几个块构成：</h3><p><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/EEDD6D86E59B4B209EC468D45DAA0FE1/6020" alt="v8内存内部模块"></p>
+<p><code>node-v8</code> 暴露模块</p>
+<ul>
+<li>新生代内存区（<code>new_space</code>）<ul>
+<li>大多数的对象都会被分配在这里，这个区域很小但是垃圾回收比较频繁</li>
+</ul>
+</li>
+<li>老生代内存区（<code>old_space</code>）<ul>
+<li>属于老生代，这里只保存原始数据对象，这些对象没有指向其他对象的指针</li>
+</ul>
+</li>
+<li>大对象区（<code>large_object_space</code>）<ul>
+<li>这里存放体积超越其他区大小的对象，每个对象有自己的内存，垃圾回收其不会移动大对象区</li>
+</ul>
+</li>
+<li>代码区（<code>code_space</code>）<ul>
+<li>代码对象，会被分配在这里。唯一拥有执行权限的内存</li>
+</ul>
+</li>
+<li>map 区（<code>map_space</code>）<ul>
+<li>存放 <code>Cell</code> 和 <code>Map</code>，每个区域都是存放相同大小的元素，结构简单</li>
+</ul>
+</li>
+</ul>
+<h3 id="内存分布"><a href="#内存分布" class="headerlink" title="内存分布"></a>内存分布</h3><p><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCEf08ab39a9603ea46e081ef85cd1ad59a/5986" alt="内存分布"></p>
+<p>内存模块中通常分为已申请区、使用区、可使用区等。<code>new_space</code>则分为激活区、未激活区。</p>
+<p>以下通过三个API获取的当前系统及程序内存环境数据，已换算成<code>MB</code></p>
+<ul>
+<li><code>process.memoryUsage()</code></li>
+<li><code>v8.getHeapStatistics()</code></li>
+<li><code>v8.getHeapSpaceStatistics()</code></li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"code"</span>: <span class="number">100000</span>,</span><br><span class="line">  <span class="attr">"data"</span>: &#123;</span><br><span class="line">    <span class="attr">"memoryUsage"</span>: &#123;</span><br><span class="line">      <span class="attr">"rss"</span>: <span class="number">217</span>,</span><br><span class="line">      <span class="attr">"heapTotal"</span>: <span class="number">181</span>,</span><br><span class="line">      <span class="attr">"heapUsed"</span>: <span class="number">152</span>,</span><br><span class="line">      <span class="attr">"external"</span>: <span class="number">11</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"HeapStatistics"</span>: &#123;</span><br><span class="line">      <span class="attr">"total_heap_size"</span>: <span class="number">181</span>,</span><br><span class="line">      <span class="attr">"total_heap_size_executable"</span>: <span class="number">10</span>,</span><br><span class="line">      <span class="attr">"total_physical_size"</span>: <span class="number">179</span>,</span><br><span class="line">      <span class="attr">"total_available_size"</span>: <span class="number">1260</span>,</span><br><span class="line">      <span class="attr">"used_heap_size"</span>: <span class="number">152</span>,</span><br><span class="line">      <span class="attr">"heap_size_limit"</span>: <span class="number">1432</span>,</span><br><span class="line">      <span class="attr">"malloced_memory"</span>: <span class="number">1</span>,</span><br><span class="line">      <span class="attr">"peak_malloced_memory"</span>: <span class="number">11</span>,</span><br><span class="line">      <span class="attr">"does_zap_garbage"</span>: <span class="number">0</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"HeapSpaceStatistics"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"space_name"</span>: <span class="string">"new_space"</span>,</span><br><span class="line">        <span class="attr">"space_size"</span>: <span class="number">32</span>,</span><br><span class="line">        <span class="attr">"space_used_size"</span>: <span class="number">8</span>,</span><br><span class="line">        <span class="attr">"space_available_size"</span>: <span class="number">9</span>,</span><br><span class="line">        <span class="attr">"physical_space_size"</span>: <span class="number">32</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"space_name"</span>: <span class="string">"old_space"</span>,</span><br><span class="line">        <span class="attr">"space_size"</span>: <span class="number">88</span>,</span><br><span class="line">        <span class="attr">"space_used_size"</span>: <span class="number">86</span>,</span><br><span class="line">        <span class="attr">"space_available_size"</span>: <span class="number">2</span>,</span><br><span class="line">        <span class="attr">"physical_space_size"</span>: <span class="number">88</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"space_name"</span>: <span class="string">"code_space"</span>,</span><br><span class="line">        <span class="attr">"space_size"</span>: <span class="number">9</span>,</span><br><span class="line">        <span class="attr">"space_used_size"</span>: <span class="number">8</span>,</span><br><span class="line">        <span class="attr">"space_available_size"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"physical_space_size"</span>: <span class="number">9</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"space_name"</span>: <span class="string">"map_space"</span>,</span><br><span class="line">        <span class="attr">"space_size"</span>: <span class="number">3</span>,</span><br><span class="line">        <span class="attr">"space_used_size"</span>: <span class="number">3</span>,</span><br><span class="line">        <span class="attr">"space_available_size"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"physical_space_size"</span>: <span class="number">3</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"space_name"</span>: <span class="string">"large_object_space"</span>,</span><br><span class="line">        <span class="attr">"space_size"</span>: <span class="number">50</span>,</span><br><span class="line">        <span class="attr">"space_used_size"</span>: <span class="number">49</span>,</span><br><span class="line">        <span class="attr">"space_available_size"</span>: <span class="number">1250</span>,</span><br><span class="line">        <span class="attr">"physical_space_size"</span>: <span class="number">50</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"msg"</span>: <span class="string">"metrics"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="v8内存生命周期"><a href="#v8内存生命周期" class="headerlink" title="v8内存生命周期"></a>v8内存生命周期</h3><p>假设当前有一个变量<code>house</code>，从创建到销毁过程大致过程如下。</p>
+<ol>
+<li><p>这个对象被分配到了 <code>new_space</code></p>
+</li>
+<li><p>随着程序的运行，<code>new_space</code> 塞满了，<code>GC</code> 开始清理 <code>new_space</code> 里的<code>死</code>对象，<code>house</code> 因为还处于活跃状态，所以没被清理出去<code>GC</code></p>
+</li>
+<li><p>清理了两遍 <code>new_space</code>，发现 <code>house</code> 依然还活跃着，就把 <code>house</code> 移动到了 <code>old_space</code></p>
+</li>
+<li><p>随着程序的运行，<code>old_space</code> 也塞满了，<code>GC</code> 开始清理 <code>old_space</code>，这时候发现 <code>house</code> 已经没有被引用了，就把 <code>house</code> 给清理出去了，如果一直引用，则不会被清理</p>
+</li>
+</ol>
+<p>第二步里，清理 <code>new_space</code> 的过程叫做 <code>Scavenge</code>（不是胡说八道，证据在上面源码图里），即空间换时间，我们把<code>new_space</code>分为激活和未激活两个区域，则过程如下：</p>
+<p><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCE97aa6f5f60545b3487162ee02e2c218a/6010" alt="scavenge策略"></p>
+<ol>
+<li>当活跃区满了之后，交换活跃区和非活跃区，交换后活跃区变空</li>
+<li>将非活跃区的两次清理都没清理出去的对象移动到 <code>old_space</code></li>
+<li>将还没清理够两次的但是活跃状态的对象移动到活跃区</li>
+</ol>
+<p>第四步里，清理 <code>old_space</code> 的过程叫做 <code>Mark-sweep</code> ，这块占用内存很大，所以没有使用 <code>Scavenge</code>，这个回收过程包含了若干次标记过程和清理过程：</p>
+<p>把当前 <code>内存数据抽象为森林</code>，如下<br><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCE5a2834d9b2313bfb0446b8985afd390b/6013" alt="mark-sweep"></p>
+<p>清理后<br><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCEb432ed0f3ba86d2d65097d1fa0e15e83/6016" alt="mark-sweep"></p>
+<ol>
+<li>标记从根可达的对象为黑色</li>
+<li>遍历黑色对象的邻接对象，直到所有对象都标记为黑色</li>
+<li>循环标记若干次</li>
+<li>清理掉非黑色的对象。</li>
+</ol>
+<p>简单来说，<code>Mark-sweep</code> 就是把从根节点无法获取到的对象清理掉</p>
+<h3 id="理论于实践的意义"><a href="#理论于实践的意义" class="headerlink" title="理论于实践的意义"></a>理论于实践的意义</h3><p>注：本文Chrome调试部分基于版本（Version <code>74.0.3729.169</code> (Official Build) (64-bit)）</p>
+<h4 id="首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><a href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）" class="headerlink" title="首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）"></a>首先认识下<code>Chrome DevTools</code>内存模块（当前静态内存分布，时刻）</h4><ul>
+<li>准备好 <code>Chrome</code>，然后执行下面的代码</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeClass</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(super)&#123;</span><br><span class="line">    <span class="keyword">this</span>.super()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeFangClass</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>()&#123;</span><br><span class="line">    <span class="keyword">this</span>.fang = <span class="keyword">new</span> BeikeClass()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> array = <span class="keyword">new</span> <span class="built_in">Array</span>(<span class="number">100000</span>).fill(<span class="string">''</span>).map(<span class="function"><span class="params">item</span> =&gt;</span> &#123;<span class="keyword">new</span> BeikeFangClass()&#125;)</span><br></pre></td></tr></table></figure>
+<ul>
+<li>打开<code>Chrome devtools</code>，进入<code>memory</code></li>
+</ul>
+<p><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/D28AC58CB6AC4269AC28E0C271A6D7DC/6018" alt="内存堆快照"></p>
+<p>介绍下几个tab:</p>
+<ul>
+<li><code>Constructor</code>为构造函数</li>
+<li><code>Distance</code>为对象到根层级</li>
+<li><code>Shallow Size</code>为对象自己内存大小（不包含内部引用）</li>
+<li><code>Retained Size</code>为对象内存总大小且包含内部引用对象大小</li>
+</ul>
+<p>上面经过过滤后会看到申明的两个类 <code>BeikeClass</code>、<code>BeikeFangClass</code>，可以看到 <code>BeikeFangClass</code>(6)下一层级有 <code>BeikeClass</code>(7)，而且 <code>2400000+3200000=5600000</code> 也符合上面对 <code>Shallow Size</code>和 <code>Retained Size</code>的解释（瞎解释？，<a href="https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101" target="_blank" rel="noopener">官网走你</a>）</p>
+<p>注：<code>Retained Size</code> 是性能调优阶段重要指标（主动<code>GC</code>）</p>
+<h4 id="怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline"><a href="#怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline" class="headerlink" title="怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline"></a>怎么样才能看到内存在涨呢？看个动态的<code>Performance</code>之前叫<code>Timeline</code></h4><p><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/DD4B05DF897243D58305540F4B77006B/6026" alt="`Performance`"></p>
+<p>看，这里的<code>波动图</code>就能看到内存在涨。怎么操作？执行下面的代码</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x = [];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">grow</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">    <span class="built_in">document</span>.body.appendChild(<span class="built_in">document</span>.createElement(<span class="string">'div'</span>));</span><br><span class="line">  &#125;</span><br><span class="line">  x.push(<span class="keyword">new</span> <span class="built_in">Array</span>(<span class="number">1000000</span>).join(<span class="string">'x'</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">document</span>.getElementById(<span class="string">'grow'</span>).addEventListener(<span class="string">'click'</span>, grow);</span><br></pre></td></tr></table></figure>
+<p>然后点击开始记录当前时刻开始一段时间内的内存使用情况，下面仔细看下这20s左右内存使用情况：</p>
+<ul>
+<li><p>首先主动<code>GC</code>一次，能看到内存有所下降，也就是图中标注的第一次（<code>Major GC</code>，其中可能包含一到多次<code>Minor GC</code>），<code>Major GC</code>通常是针对老生代、<code>Minor GC</code>通常针对新生代，那也就意味着<code>Major</code>通常比<code>Minor</code>慢，因为老生代内存比新生代内存大很多，算法也不相同。</p>
+</li>
+<li><p>中间红色框标记的为向文档中插入<code>10000</code>个DOM，可以看到<code>js heap</code>有增长</p>
+</li>
+<li><p>后续每次插入<code>10000</code>DOM，都能看到明显的<code>js heap</code>增长，同时还有<code>nodes</code>增长</p>
+</li>
+<li><p>在随着DOM原来越多，系统会自动触发<code>DOM GC</code>，尝试回收无用DOM，以及<code>Minor GC</code><br><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/0681504A22D648B4A88CDA9728E8B098/6030" alt="DOM"><br><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/3DC318AD5F2E44109C7C2BE490CFCF1F/6028" alt="DOM"></p>
+</li>
+<li><p>最后一次主动GC后内存也明显下降了</p>
+</li>
+<li><p>我们还可以点击下方的 <code>Call tree</code> 来查看整个过程的调用树，我们能看到除<code>Major GC</code>、<code>Minor GC</code>、<code>DOM GC</code>之外的其他相关系统调用栈及具体信息<br><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/6DE35BD1EFB34650A0DCC14E86E358B5/6032" alt="Call Tree"></p>
+</li>
+<li><p>通过<code>Event Log</code>查看根据时间系统调用栈<br><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/B0D600F46EC84AE0B2EA62077044AE36/6034" alt="`Event Log`"></p>
+</li>
+</ul>
+<h4 id="怎么分析内存爆了？谁爆了？"><a href="#怎么分析内存爆了？谁爆了？" class="headerlink" title="怎么分析内存爆了？谁爆了？"></a>怎么分析内存爆了？谁爆了？</h4><p>那我们模拟一个泄漏的例子，模拟内存增长：</p>
+<ul>
+<li><p>打开 <code>memory</code>，然后执行下面的代码，每隔一段时间录制一段 <code>HEAP SNAPSHOTS</code>，然后做两两对比<br><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/22B677705A284D0B87C0A4DA9019E6D7/6036" alt="`多次HEAP SNAPSHOTS`"></p>
+</li>
+<li><p>对于上面的图来说，我们的首先选中其中一个<code>SNAPSHOTS</code>比如<code>SNAPSHOTS 7</code>，然后修改<code>Summary-&gt;Comparison</code>，右侧选中<code>SNAPSHOTS 7</code>作对比，我们看到右侧红色框中<code>new</code>中比较多，也是我们需要关注的。</p>
+</li>
+<li><p>重复上面的过程，选择对比<code>SNAPSHOTS 8</code>与<code>SNAPSHOTS 7</code>，同样能得到一个对比<br><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/9A5F41838121412093042EDBBA949FE9/6038" alt="二次对比"></p>
+</li>
+<li><p>对比两张图，可以看到两次对比中<code>BeikeClass</code>、<code>ArrayBuffer</code>、<code>string</code>等几项都明显增长，我们点击三角展开就能定位变量最终引用比如这里的<code>ArrayBuffer</code>，点开后<code>fang in BeikeiClass</code>-<code>1560244861634</code>-<code>_heap</code>，及最终引用链（官网叫支配项）</p>
+</li>
+<li><p><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/9CF730B61DDB43AF828E6AF4185B1D50/6040" alt="对象引用"></p>
+</li>
+</ul>
+<p>最终我们也就能定位到是<code>BeikeClass</code>、<code>ArrayBuffer</code>、<code>string</code>几个可能是问题所在，从而定位到相关代码。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/08/我是怎样搞定webpack4静态资源的/" rel="next" title="我是怎样搞定webpack4静态资源的">
+                <i class="fa fa-chevron-left"></i> 我是怎样搞定webpack4静态资源的
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Inhaltsverzeichnis
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Übersicht
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">schacker</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">Artikel</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">Tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#node-v8-内存一二三"><span class="nav-number">1.</span> <span class="nav-text">node v8 内存一二三</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">1.1.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#V8-内存构成"><span class="nav-number">1.2.</span> <span class="nav-text">V8 内存构成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一个-V8-进程的内存通常由以下几个块构成："><span class="nav-number">1.2.1.</span> <span class="nav-text">一个 V8 进程的内存通常由以下几个块构成：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存分布"><span class="nav-number">1.2.2.</span> <span class="nav-text">内存分布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#v8内存生命周期"><span class="nav-number">1.2.3.</span> <span class="nav-text">v8内存生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理论于实践的意义"><span class="nav-number">1.2.4.</span> <span class="nav-text">理论于实践的意义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><span class="nav-number">1.2.4.1.</span> <span class="nav-text">首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline"><span class="nav-number">1.2.4.2.</span> <span class="nav-text">怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么分析内存爆了？谁爆了？"><span class="nav-number">1.2.4.3.</span> <span class="nav-text">怎么分析内存爆了？谁爆了？</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">schacker</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
