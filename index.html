@@ -309,35 +309,8 @@
 <li><p>定位内存泄漏，找有引用但不被使用</p>
 </li>
 </ul>
-<blockquote>
-<p>JS堆由新生代，老生代和大对象空间组成。新生代分为两个半空间。清道夫（<code>Scavenge</code>）实施了切尼(<code>Cheny&#39;s</code>)的复制算法。老生代被分为<code>map</code>空间和旧对象空间。<code>map</code>空间包含所有<code>map</code>对象，其余旧对象进入旧空间。老生代由标记扫描紧凑的收集器收集。</p>
-</blockquote>
-<blockquote>
-<p>新生代的半空间是连续的。旧地图和地图空间由一系列页面组成。页面具有页眉和对象区域。</p>
-</blockquote>
-<blockquote>
-<p>对于大于的对象，有一个单独的大对象空间<code>kMaxRegularHeapObjectSize</code>，以便它们不必在移动期间移动采集。分页大对象空间。大对象空间中的页面可能大于页面大小。</p>
-</blockquote>
-<blockquote>
-<p>基于存储缓冲区的写屏障用于跟踪代际引用。请参阅heap/store-buffer.h。</p>
-</blockquote>
-<blockquote>
-<p>在清除和标记清除集合期间，我们有时（在存储缓冲区溢出之后）迭代代际指针而不解码堆对象映射，因此如果页面属于旧空间或大对象空间，则必须保证页面不包含任何垃圾指针到新空间：满足Heap :: InNewSpace（）谓词的每个指针对齐的单词必须是指向新空间中的活动堆对象的指针。因此，旧空间和大对象空间中的对象应该具有特殊布局（例如，没有裸整数字段）。此要求不适用于以特殊方式迭代的地图空间。但是，我们仍然需要清除死映射的指针字段。</p>
-</blockquote>
-<blockquote>
-<p>要启用对旧空间页面的延迟清理，我们可以标记页面的块作为垃圾。垃圾部分标有特殊地图。这些扫描页面时会跳过部分，即使我们不是这样扫描而不考虑对象边界。垃圾部分被链接GC之后一起形成一个空闲列表。外面创建的垃圾部分通过对象trunctation等的GC可能不在自由列表链中。非常小的自由空间被忽略，它们只需要清除伪指针进入新的空间。</p>
-</blockquote>
-<blockquote>
-<p>每个页面最多可包含一个特殊垃圾部分。这个开始section由空格中的顶部字段表示。本节结尾由空间中的限制字段表示。这个特殊的垃圾部分未在数据中标记可用空间映射。本节的要点是在不必不断更新字节的情况下启用线性分配每次更新顶部字段并创建新对象时都会生成数组。该特殊垃圾部分不在垃圾部分链中。</p>
-</blockquote>
-<blockquote>
-<p>由于top和limit字段位于空格中，而不是页面，因此只有一页有一个特殊的垃圾部分，如果顶部和限制是相等的那么没有特殊的垃圾部分。</p>
-</blockquote>
-<blockquote>
-<p>调试模式中使用了一些断言宏</p>
-</blockquote>
 <h2 id="V8-内存构成（以下研究基于node-8-x-版本依赖的v8版本）"><a href="#V8-内存构成（以下研究基于node-8-x-版本依赖的v8版本）" class="headerlink" title="V8 内存构成（以下研究基于node 8.x 版本依赖的v8版本）"></a><code>V8</code> 内存构成（以下研究基于<code>node 8.x</code> 版本依赖的v8版本）</h2><h3 id="一个-V8-进程的内存通常由以下几个块构成："><a href="#一个-V8-进程的内存通常由以下几个块构成：" class="headerlink" title="一个 V8 进程的内存通常由以下几个块构成："></a>一个 <code>V8</code> 进程的内存通常由以下几个块构成：</h3><p>Heap内存分配枚举</p>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// <span class="doctag">NOTE:</span> SpaceIterator depends on AllocationSpace enumeration values being</span></span><br><span class="line"><span class="comment">// consecutive.</span></span><br><span class="line"><span class="comment">// Keep this enum in sync with the ObjectSpace enum in v8.h</span></span><br><span class="line">enum AllocationSpace &#123;</span><br><span class="line">  NEW_SPACE,   <span class="comment">// Semispaces collected with copying collector.</span></span><br><span class="line">  OLD_SPACE,   <span class="comment">// May contain pointers to new space.</span></span><br><span class="line">  CODE_SPACE,  <span class="comment">// No pointers to new space, marked executable.</span></span><br><span class="line">  MAP_SPACE,   <span class="comment">// Only and all map objects.</span></span><br><span class="line">  LO_SPACE,    <span class="comment">// Promoted large objects.</span></span><br><span class="line"></span><br><span class="line">  FIRST_SPACE = NEW_SPACE,</span><br><span class="line">  LAST_SPACE = LO_SPACE,</span><br><span class="line">  FIRST_PAGED_SPACE = OLD_SPACE,</span><br><span class="line">  LAST_PAGED_SPACE = MAP_SPACE</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// <span class="doctag">NOTE:</span> SpaceIterator depends on AllocationSpace enumeration values being</span></span><br><span class="line"><span class="comment">// consecutive.</span></span><br><span class="line"><span class="comment">// Keep this enum in sync with the ObjectSpace enum in v8.h</span></span><br><span class="line"><span class="keyword">enum</span> AllocationSpace &#123;</span><br><span class="line">  NEW_SPACE,   <span class="comment">// Semispaces collected with copying collector.</span></span><br><span class="line">  OLD_SPACE,   <span class="comment">// May contain pointers to new space.</span></span><br><span class="line">  CODE_SPACE,  <span class="comment">// No pointers to new space, marked executable.</span></span><br><span class="line">  MAP_SPACE,   <span class="comment">// Only and all map objects.</span></span><br><span class="line">  LO_SPACE,    <span class="comment">// Promoted large objects.</span></span><br><span class="line"></span><br><span class="line">  FIRST_SPACE = NEW_SPACE,</span><br><span class="line">  LAST_SPACE = LO_SPACE,</span><br><span class="line">  FIRST_PAGED_SPACE = OLD_SPACE,</span><br><span class="line">  LAST_PAGED_SPACE = MAP_SPACE</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p><code>node-v8</code> 暴露模块</p>
 <ul>
 <li>新生代内存区（<code>new_space</code>）<ul>
