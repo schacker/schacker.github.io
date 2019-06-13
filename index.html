@@ -354,7 +354,7 @@
 <ul>
 <li>该函数获得当前系统当前编译器中最大的<code>heap</code>内存，通过计算为<code>1432MB</code>，笔记通过API实时调用能看到也是<code>1432MB</code>，可通过<code>v8</code>提供的<code>getHeapStatistics()</code>函数拿到<code>heap_size_limit</code>就是我们<code>heap</code>内存最大上限。</li>
 </ul>
-<h3 id="内存分布"><a href="#内存分布" class="headerlink" title="内存分布"></a>内存分布</h3><p><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCEf08ab39a9603ea46e081ef85cd1ad59a/5986" alt="内存分布"></p>
+<h3 id="内存分布"><a href="#内存分布" class="headerlink" title="内存分布"></a>内存分布</h3><p><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCE2d2d3cc81361d98131b6e33f47827c1d/6047" alt="内存分布"></p>
 <p>内存模块中通常分为已申请区、使用区、可使用区等。<code>new_space</code>则分为激活区、未激活区。</p>
 <p>以下通过三个API获取的当前系统及程序内存环境数据，笔者已换算成<code>MB</code></p>
 <ul>

@@ -85,7 +85,7 @@
 <meta property="og:url" content="http://yoursite.com/2019/06/10/node-v8-metrics/index.html">
 <meta property="og:site_name" content="菜鸟的逆袭">
 <meta property="og:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
-<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCEf08ab39a9603ea46e081ef85cd1ad59a/5986">
+<meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCE2d2d3cc81361d98131b6e33f47827c1d/6047">
 <meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCE53bd5187bd2688034818e50dd5fb4a7a/6043">
 <meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCE5a2834d9b2313bfb0446b8985afd390b/6013">
 <meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCEb432ed0f3ba86d2d65097d1fa0e15e83/6016">
@@ -98,11 +98,11 @@
 <meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/22B677705A284D0B87C0A4DA9019E6D7/6036">
 <meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/9A5F41838121412093042EDBBA949FE9/6038">
 <meta property="og:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/9CF730B61DDB43AF828E6AF4185B1D50/6040">
-<meta property="og:updated_time" content="2019-06-13T12:06:38.115Z">
+<meta property="og:updated_time" content="2019-06-13T12:14:07.417Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="node_v8_metrics">
 <meta name="twitter:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
-<meta name="twitter:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCEf08ab39a9603ea46e081ef85cd1ad59a/5986">
+<meta name="twitter:image" content="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCE2d2d3cc81361d98131b6e33f47827c1d/6047">
 
 
 
@@ -367,7 +367,7 @@
 <ul>
 <li>该函数获得当前系统当前编译器中最大的<code>heap</code>内存，通过计算为<code>1432MB</code>，笔记通过API实时调用能看到也是<code>1432MB</code>，可通过<code>v8</code>提供的<code>getHeapStatistics()</code>函数拿到<code>heap_size_limit</code>就是我们<code>heap</code>内存最大上限。</li>
 </ul>
-<h3 id="内存分布"><a href="#内存分布" class="headerlink" title="内存分布"></a>内存分布</h3><p><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCEf08ab39a9603ea46e081ef85cd1ad59a/5986" alt="内存分布"></p>
+<h3 id="内存分布"><a href="#内存分布" class="headerlink" title="内存分布"></a>内存分布</h3><p><img src="https://note.youdao.com/yws/public/resource/799fa86e722c8006d116c6c667bf4d8e/xmlnote/WEBRESOURCE2d2d3cc81361d98131b6e33f47827c1d/6047" alt="内存分布"></p>
 <p>内存模块中通常分为已申请区、使用区、可使用区等。<code>new_space</code>则分为激活区、未激活区。</p>
 <p>以下通过三个API获取的当前系统及程序内存环境数据，笔者已换算成<code>MB</code></p>
 <ul>
