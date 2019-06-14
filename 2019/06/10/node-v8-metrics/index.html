@@ -87,8 +87,13 @@
 <meta property="og:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
 <meta property="og:image" content="http://schacker.lijundong.com/node-metrics.png">
 <meta property="og:image" content="http://schacker.lijundong.com/scavenge-cheny.png">
-<meta property="og:image" content="http://schacker.lijundong.com/mark-sweep.png">
-<meta property="og:image" content="http://schacker.lijundong.com/mark-sweep-clean.png">
+<meta property="og:image" content="http://schacker.lijundong.com/scavenge-mark-before.png">
+<meta property="og:image" content="http://schacker.lijundong.com/scavenge-marki%1Dn%1Dg.png">
+<meta property="og:image" content="http://schacker.lijundong.com/scavenge-gc-done.png">
+<meta property="og:image" content="http://schacker.lijundong.com/mark-sweep-before.png">
+<meta property="og:image" content="http://schacker.lijundong.com/mark-sweep-after.png">
+<meta property="og:image" content="http://schacker.lijundong.com/mark-compact-clear.png">
+<meta property="og:image" content="http://schacker.lijundong.com/compare-diff.png">
 <meta property="og:image" content="http://schacker.lijundong.com/heapshot.png.jpeg">
 <meta property="og:image" content="http://schacker.lijundong.com/performance4.png.jpeg">
 <meta property="og:image" content="http://schacker.lijundong.com/dom-gc.jpeg">
@@ -98,7 +103,7 @@
 <meta property="og:image" content="http://schacker.lijundong.com/compare-heapshot.jpeg">
 <meta property="og:image" content="http://schacker.lijundong.com/compare-heapshot7-8.jpeg">
 <meta property="og:image" content="http://schacker.lijundong.com/object-tail.jpeg">
-<meta property="og:updated_time" content="2019-06-14T03:32:06.068Z">
+<meta property="og:updated_time" content="2019-06-14T09:05:00.341Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="node_v8_metrics">
 <meta name="twitter:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
@@ -198,7 +203,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -208,7 +213,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -272,7 +277,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-10T10:19:06+08:00">
                 2019-06-10
@@ -397,16 +402,25 @@
 </ol>
 <h4 id="mark-sweep标记清扫"><a href="#mark-sweep标记清扫" class="headerlink" title="mark-sweep标记清扫"></a>mark-sweep标记清扫</h4><p>第四步里，清理 <code>old_space</code> 的过程叫做 <code>Mark-sweep</code>，也就是标记和清扫，这块占用内存很大，所以没有使用 <code>Scavenge</code>，这个回收过程包含了若干次(2-7次)标记过程和清理过程：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// full GC</span></span><br><span class="line"><span class="keyword">void</span> Heap::CollectAllAvailableGarbage(GarbageCollectionReason gc_reason) &#123;</span><br><span class="line">  <span class="comment">// Since we are ignoring the return value, the exact choice of space does</span></span><br><span class="line">  <span class="comment">// not matter, so long as we do not specify NEW_SPACE, which would not</span></span><br><span class="line">  <span class="comment">// cause a full GC.</span></span><br><span class="line">  <span class="comment">// Major GC would invoke weak handle callbacks on weakly reachable</span></span><br><span class="line">  <span class="comment">// handles, but won't collect weakly reachable objects until next</span></span><br><span class="line">  <span class="comment">// major GC.  Therefore if we collect aggressively and weak handle callback</span></span><br><span class="line">  <span class="comment">// has been invoked, we rerun major GC to release objects which become</span></span><br><span class="line">  <span class="comment">// garbage.</span></span><br><span class="line">  <span class="comment">// Note: as weak callbacks can execute arbitrary code, we cannot</span></span><br><span class="line">  <span class="comment">// hope that eventually there will be no weak callbacks invocations.</span></span><br><span class="line">  <span class="comment">// Therefore stop recollecting after several attempts.</span></span><br><span class="line">  <span class="keyword">if</span> (gc_reason == GarbageCollectionReason::kLastResort) &#123;</span><br><span class="line">    InvokeOutOfMemoryCallback();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function">RuntimeCallTimerScope <span class="title">runtime_timer</span><span class="params">(</span></span></span><br><span class="line">      isolate(), &amp;RuntimeCallStats::GC_Custom_AllAvailableGarbage);</span><br><span class="line">  <span class="keyword">if</span> (isolate()-&gt;concurrent_recompilation_enabled()) &#123;</span><br><span class="line">    <span class="comment">// The optimizing compiler may be unnecessarily holding on to memory.</span></span><br><span class="line">    DisallowHeapAllocation no_recursive_gc;</span><br><span class="line">    isolate()-&gt;optimizing_compile_dispatcher()-&gt;Flush(</span><br><span class="line">        OptimizingCompileDispatcher::BlockingBehavior::kDontBlock);</span><br><span class="line">  &#125;</span><br><span class="line">  isolate()-&gt;ClearSerializerData();</span><br><span class="line">  set_current_gc_flags(kMakeHeapIterableMask | kReduceMemoryFootprintMask);</span><br><span class="line">  isolate_-&gt;compilation_cache()-&gt;Clear();</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">int</span> kMaxNumberOfAttempts = <span class="number">7</span>;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">int</span> kMinNumberOfAttempts = <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> attempt = <span class="number">0</span>; attempt &lt; kMaxNumberOfAttempts; attempt++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!CollectGarbage(OLD_SPACE, gc_reason,</span><br><span class="line">                        v8::kGCCallbackFlagCollectAllAvailableGarbage) &amp;&amp;</span><br><span class="line">        attempt + <span class="number">1</span> &gt;= kMinNumberOfAttempts) &#123;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  set_current_gc_flags(kNoGCFlags);</span><br><span class="line">  new_space_-&gt;Shrink();</span><br><span class="line">  UncommitFromSpace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>把当前 <code>内存数据抽象为森林</code>，如下<br><img src="http://schacker.lijundong.com/mark-sweep.png" alt="mark-sweep"></p>
-<p>清理后<br><img src="http://schacker.lijundong.com/mark-sweep-clean.png" alt="mark-sweep"></p>
+<p>把当前 <code>内存数据抽象为森林</code>，如下<br><img src="http://schacker.lijundong.com/scavenge-mark-before.png" alt="mark-sweep"></p>
+<p>清理后<br><img src="http://schacker.lijundong.com/scavenge-marki%1Dn%1Dg.png" alt="mark-sweep"><br><img src="http://schacker.lijundong.com/scavenge-gc-done.png" alt="mark-sweep"></p>
 <ol>
-<li>标记从根可达的对象为黑色</li>
-<li>遍历黑色对象的邻接对象，直到所有对象都标记为黑色</li>
+<li>标记从根可达的对象为白色</li>
+<li>遍历白色对象的邻接对象，直到所有可到对象都标记为白色</li>
 <li>循环标记若干次（2-7）</li>
-<li>清理掉非黑色的对象。</li>
+<li>清理掉非白色的对象。</li>
 </ol>
-<p>简单来说，<code>Mark-sweep</code> 就是把从根节点无法获取到的对象清理掉</p>
-<p>// 多种算法对比</p>
+<p>简单来说，<code>Mark-sweep</code> 就是把从根节点无法获取到的对象清理掉，与<code>scavenge-cheny</code>相比，<code>scavenge-cheny</code>只会复制存活对象，而新内存中本身就小，且存活对象不多，所以高效。<code>mark-sweep</code>则只会清除没被标记的对象，而老生代死对象少，这也就是<code>mark-sweep</code>针对老生代区域高效GC的原因。</p>
+<h4 id="mark-compact-标记整理和压缩"><a href="#mark-compact-标记整理和压缩" class="headerlink" title="mark-compact 标记整理和压缩"></a><code>mark-compact</code> 标记整理和压缩</h4><p>由于经过<code>mark-sweep</code>算法GC后，会出现不连续的空间，导致空间碎片，当下次需要移动大对象或对象晋升，但没有足够的空间使用，将会再次导致GC，但往往这个时候GC没必要的，因为很可能是刚刚GC过，所以怎么合理利用空间碎片就成了性能关键。于是<code>mark-compact</code>算法出现了。</p>
+<ol>
+<li>将存活对象移动到<code>old_space</code>的一端</li>
+<li>将另一端直接清空</li>
+</ol>
+<p>整理之前（黑色为死对象）<br><img src="http://schacker.lijundong.com/mark-sweep-before.png" alt="整理之前"></p>
+<p>整理之后<br><img src="http://schacker.lijundong.com/mark-sweep-after.png" alt="整理之后"><br><img src="http://schacker.lijundong.com/mark-compact-clear.png" alt="整理之后"></p>
+<p>我们对比下三种GC算法</p>
+<p><img src="http://schacker.lijundong.com/compare-diff.png" alt="GC算法对比"></p>
+<h4 id="incremental-marking"><a href="#incremental-marking" class="headerlink" title="incremental-marking"></a><code>incremental-marking</code></h4><p>由于GC期间，需要执行<code>stop-the-world</code>来保证应用程序逻辑和GC看到的一致性，所以v8中引入了<code>incremental-marking</code>增量标记策略，清理一会儿，执行一会儿应用程序。</p>
 <h3 id="理论于实践的意义"><a href="#理论于实践的意义" class="headerlink" title="理论于实践的意义"></a>理论于实践的意义</h3><p>注：本文Chrome调试部分基于版本（Version <code>74.0.3729.169</code> (Official Build) (64-bit)）</p>
 <h4 id="首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><a href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）" class="headerlink" title="首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）"></a>首先认识下<code>Chrome DevTools</code>内存模块（当前静态内存分布，时刻）</h4><ul>
 <li>准备好 <code>Chrome</code>，然后执行下面的代码</li>
@@ -545,10 +559,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
+            Inhaltsverzeichnis
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
+            Übersicht
           </li>
         </ul>
       
@@ -569,7 +583,7 @@
                 <a href="/archives/">
               
                   <span class="site-state-item-count">17</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -582,7 +596,7 @@
               <div class="site-state-item site-state-tags">
                 
                   <span class="site-state-item-count">2</span>
-                  <span class="site-state-item-name">tags</span>
+                  <span class="site-state-item-name">Tags</span>
                 
               </div>
             
@@ -614,7 +628,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#node-v8-内存一二三"><span class="nav-number">1.</span> <span class="nav-text">node v8 内存一二三</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">1.1.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#V8-内存构成（以下研究基于node-8-x-版本依赖的v8版本）"><span class="nav-number">1.2.</span> <span class="nav-text">V8 内存构成（以下研究基于node 8.x 版本依赖的v8版本）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一个-V8-进程的内存通常由以下几个块构成："><span class="nav-number">1.2.1.</span> <span class="nav-text">一个 V8 进程的内存通常由以下几个块构成：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存分布"><span class="nav-number">1.2.2.</span> <span class="nav-text">内存分布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#v8内存生命周期"><span class="nav-number">1.2.3.</span> <span class="nav-text">v8内存生命周期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#scavenge-cheny算法"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">scavenge-cheny算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mark-sweep标记清扫"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">mark-sweep标记清扫</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理论于实践的意义"><span class="nav-number">1.2.4.</span> <span class="nav-text">理论于实践的意义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><span class="nav-number">1.2.4.1.</span> <span class="nav-text">首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline"><span class="nav-number">1.2.4.2.</span> <span class="nav-text">怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么分析内存爆了？谁爆了？"><span class="nav-number">1.2.4.3.</span> <span class="nav-text">怎么分析内存爆了？谁爆了？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#node环境怎么操作？"><span class="nav-number">1.2.4.4.</span> <span class="nav-text">node环境怎么操作？</span></a></li></ol></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#node-v8-内存一二三"><span class="nav-number">1.</span> <span class="nav-text">node v8 内存一二三</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">1.1.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#V8-内存构成（以下研究基于node-8-x-版本依赖的v8版本）"><span class="nav-number">1.2.</span> <span class="nav-text">V8 内存构成（以下研究基于node 8.x 版本依赖的v8版本）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一个-V8-进程的内存通常由以下几个块构成："><span class="nav-number">1.2.1.</span> <span class="nav-text">一个 V8 进程的内存通常由以下几个块构成：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存分布"><span class="nav-number">1.2.2.</span> <span class="nav-text">内存分布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#v8内存生命周期"><span class="nav-number">1.2.3.</span> <span class="nav-text">v8内存生命周期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#scavenge-cheny算法"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">scavenge-cheny算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mark-sweep标记清扫"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">mark-sweep标记清扫</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mark-compact-标记整理和压缩"><span class="nav-number">1.2.3.3.</span> <span class="nav-text">mark-compact 标记整理和压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#incremental-marking"><span class="nav-number">1.2.3.4.</span> <span class="nav-text">incremental-marking</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理论于实践的意义"><span class="nav-number">1.2.4.</span> <span class="nav-text">理论于实践的意义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><span class="nav-number">1.2.4.1.</span> <span class="nav-text">首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline"><span class="nav-number">1.2.4.2.</span> <span class="nav-text">怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么分析内存爆了？谁爆了？"><span class="nav-number">1.2.4.3.</span> <span class="nav-text">怎么分析内存爆了？谁爆了？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#node环境怎么操作？"><span class="nav-number">1.2.4.4.</span> <span class="nav-text">node环境怎么操作？</span></a></li></ol></li></ol></li></ol></li></ol></div>
             
 
           </div>
@@ -644,7 +658,7 @@
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
