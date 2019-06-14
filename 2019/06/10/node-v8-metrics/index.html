@@ -103,7 +103,7 @@
 <meta property="og:image" content="http://schacker.lijundong.com/compare-heapshot.jpeg">
 <meta property="og:image" content="http://schacker.lijundong.com/compare-heapshot7-8.jpeg">
 <meta property="og:image" content="http://schacker.lijundong.com/object-tail.jpeg">
-<meta property="og:updated_time" content="2019-06-14T09:05:00.341Z">
+<meta property="og:updated_time" content="2019-06-14T09:08:45.118Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="node_v8_metrics">
 <meta name="twitter:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
@@ -203,7 +203,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Startseite
+            Home
           </a>
         </li>
       
@@ -213,7 +213,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archiv
+            Archives
           </a>
         </li>
       
@@ -277,7 +277,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Veröffentlicht am</span>
+                <span class="post-meta-item-text">Posted on</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-10T10:19:06+08:00">
                 2019-06-10
@@ -421,6 +421,7 @@
 <p>我们对比下三种GC算法</p>
 <p><img src="http://schacker.lijundong.com/compare-diff.png" alt="GC算法对比"></p>
 <h4 id="incremental-marking"><a href="#incremental-marking" class="headerlink" title="incremental-marking"></a><code>incremental-marking</code></h4><p>由于GC期间，需要执行<code>stop-the-world</code>来保证应用程序逻辑和GC看到的一致性，所以v8中引入了<code>incremental-marking</code>增量标记策略，清理一会儿，执行一会儿应用程序。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Heap::ReportExternalMemoryPressure() &#123;</span><br><span class="line">  <span class="keyword">const</span> GCCallbackFlags kGCCallbackFlagsForExternalMemory =</span><br><span class="line">      <span class="keyword">static_cast</span>&lt;GCCallbackFlags&gt;(</span><br><span class="line">          kGCCallbackFlagSynchronousPhantomCallbackProcessing |</span><br><span class="line">          kGCCallbackFlagCollectAllExternalMemory);</span><br><span class="line">  <span class="keyword">if</span> (external_memory_ &gt;</span><br><span class="line">      (external_memory_at_last_mark_compact_ + external_memory_hard_limit())) &#123;</span><br><span class="line">    CollectAllGarbage(</span><br><span class="line">        kReduceMemoryFootprintMask | kFinalizeIncrementalMarkingMask,</span><br><span class="line">        GarbageCollectionReason::kExternalMemoryPressure,</span><br><span class="line">        <span class="keyword">static_cast</span>&lt;GCCallbackFlags&gt;(kGCCallbackFlagCollectAllAvailableGarbage |</span><br><span class="line">                                     kGCCallbackFlagsForExternalMemory));</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (incremental_marking()-&gt;IsStopped()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (incremental_marking()-&gt;CanBeActivated()) &#123;</span><br><span class="line">      StartIncrementalMarking(i::Heap::kNoGCFlags,</span><br><span class="line">                              GarbageCollectionReason::kExternalMemoryPressure,</span><br><span class="line">                              kGCCallbackFlagsForExternalMemory);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      CollectAllGarbage(i::Heap::kNoGCFlags,</span><br><span class="line">                        GarbageCollectionReason::kExternalMemoryPressure,</span><br><span class="line">                        kGCCallbackFlagsForExternalMemory);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Incremental marking is turned on an has already been started.</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> kMinStepSize = <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> kMaxStepSize = <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> ms_step =</span><br><span class="line">        Min(kMaxStepSize,</span><br><span class="line">            Max(kMinStepSize, <span class="keyword">static_cast</span>&lt;<span class="keyword">double</span>&gt;(external_memory_) /</span><br><span class="line">                                  external_memory_limit_ * kMinStepSize));</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> deadline = MonotonicallyIncreasingTimeInMs() + ms_step;</span><br><span class="line">    <span class="comment">// Extend the gc callback flags with external memory flags.</span></span><br><span class="line">    current_gc_callback_flags_ = <span class="keyword">static_cast</span>&lt;GCCallbackFlags&gt;(</span><br><span class="line">        current_gc_callback_flags_ | kGCCallbackFlagsForExternalMemory);</span><br><span class="line">    incremental_marking()-&gt;AdvanceIncrementalMarking(</span><br><span class="line">        deadline, IncrementalMarking::GC_VIA_STACK_GUARD,</span><br><span class="line">        IncrementalMarking::FORCE_COMPLETION, StepOrigin::kV8);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h3 id="理论于实践的意义"><a href="#理论于实践的意义" class="headerlink" title="理论于实践的意义"></a>理论于实践的意义</h3><p>注：本文Chrome调试部分基于版本（Version <code>74.0.3729.169</code> (Official Build) (64-bit)）</p>
 <h4 id="首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><a href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）" class="headerlink" title="首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）"></a>首先认识下<code>Chrome DevTools</code>内存模块（当前静态内存分布，时刻）</h4><ul>
 <li>准备好 <code>Chrome</code>，然后执行下面的代码</li>
@@ -559,10 +560,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Inhaltsverzeichnis
+            Table of Contents
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Übersicht
+            Overview
           </li>
         </ul>
       
@@ -583,7 +584,7 @@
                 <a href="/archives/">
               
                   <span class="site-state-item-count">17</span>
-                  <span class="site-state-item-name">Artikel</span>
+                  <span class="site-state-item-name">posts</span>
                 </a>
               </div>
             
@@ -596,7 +597,7 @@
               <div class="site-state-item site-state-tags">
                 
                   <span class="site-state-item-count">2</span>
-                  <span class="site-state-item-name">Tags</span>
+                  <span class="site-state-item-name">tags</span>
                 
               </div>
             
@@ -658,7 +659,7 @@
 </div>
 
 
-  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
