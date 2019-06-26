@@ -86,7 +86,7 @@
 <meta property="og:site_name" content="菜鸟的逆袭">
 <meta property="og:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
 <meta property="og:image" content="http://schacker.lijundong.com/node-metrics.png">
-<meta property="og:image" content="http://schacker.lijundong.com/scavenge-cheny.png">
+<meta property="og:image" content="http://schacker.lijundong.com/scavenge-cheney.png">
 <meta property="og:image" content="http://schacker.lijundong.com/scavenge-mark-before.png">
 <meta property="og:image" content="http://schacker.lijundong.com/scavenge-marki%1Dn%1Dg.png">
 <meta property="og:image" content="http://schacker.lijundong.com/scavenge-gc-done.png">
@@ -105,7 +105,7 @@
 <meta property="og:image" content="http://schacker.lijundong.com/object-tail.jpeg">
 <meta property="og:image" content="http://schacker.lijundong.com/heapsnapshot-create.png">
 <meta property="og:image" content="http://schacker.lijundong.com/heapsnapshot-diff6.png">
-<meta property="og:updated_time" content="2019-06-26T04:22:44.590Z">
+<meta property="og:updated_time" content="2019-06-26T07:51:27.591Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="node_v8_metrics">
 <meta name="twitter:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
@@ -205,7 +205,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
             
-            Home
+            Startseite
           </a>
         </li>
       
@@ -215,7 +215,7 @@
             
               <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
             
-            Archives
+            Archiv
           </a>
         </li>
       
@@ -279,7 +279,7 @@
                 <i class="fa fa-calendar-o"></i>
               </span>
               
-                <span class="post-meta-item-text">Posted on</span>
+                <span class="post-meta-item-text">Veröffentlicht am</span>
               
               <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-10T10:19:06+08:00">
                 2019-06-10
@@ -396,8 +396,8 @@
 </ol>
 <p>第二步里，清理 <code>new_space</code> 的过程叫做 <code>Scavenge</code>（不是胡说八道，证据在下面），即空间换时间，我们把<code>new_space</code>分为激活和未激活两个半（<code>semi</code>）区域，则过程如下：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//heap.h</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Returns the timer used for a given GC type.</span></span><br><span class="line"><span class="comment">// - GCScavenger: young generation GC</span></span><br><span class="line"><span class="comment">// - GCCompactor: full GC</span></span><br><span class="line"><span class="comment">// - GCFinalzeMC: finalization of incremental full GC</span></span><br><span class="line"><span class="comment">// - GCFinalizeMCReduceMemory: finalization of incremental full GC with</span></span><br><span class="line"><span class="comment">// memory reduction</span></span><br><span class="line">HistogramTimer* Heap::GCTypeTimer(GarbageCollector collector) &#123;</span><br><span class="line">  <span class="keyword">if</span> (IsYoungGenerationCollector(collector)) &#123;</span><br><span class="line">    <span class="keyword">return</span> isolate_-&gt;counters()-&gt;gc_scavenger();</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!incremental_marking()-&gt;IsStopped()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (ShouldReduceMemory()) &#123;</span><br><span class="line">        <span class="keyword">return</span> isolate_-&gt;counters()-&gt;gc_finalize_reduce_memory();</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> isolate_-&gt;counters()-&gt;gc_finalize();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> isolate_-&gt;counters()-&gt;gc_compactor();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 是否是新生代收集器</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">bool</span> <span class="title">IsYoungGenerationCollector</span><span class="params">(GarbageCollector collector)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> collector == SCAVENGER || collector == MINOR_MARK_COMPACTOR;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> GarbageCollector <span class="title">YoungGenerationCollector</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> (FLAG_minor_mc) ? MINOR_MARK_COMPACTOR : SCAVENGER;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//gc-tracer.cc</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* GCTracer::Event::TypeName(<span class="keyword">bool</span> short_name) <span class="keyword">const</span> &#123;</span><br><span class="line">  <span class="keyword">switch</span> (type) &#123;</span><br><span class="line">    <span class="keyword">case</span> SCAVENGER:</span><br><span class="line">      <span class="keyword">return</span> (short_name) ? <span class="string">"s"</span> : <span class="string">"Scavenge"</span>;</span><br><span class="line">    <span class="keyword">case</span> MARK_COMPACTOR:</span><br><span class="line">    <span class="keyword">case</span> INCREMENTAL_MARK_COMPACTOR:</span><br><span class="line">      <span class="keyword">return</span> (short_name) ? <span class="string">"ms"</span> : <span class="string">"Mark-sweep"</span>;</span><br><span class="line">    <span class="keyword">case</span> MINOR_MARK_COMPACTOR:</span><br><span class="line">      <span class="keyword">return</span> (short_name) ? <span class="string">"mmc"</span> : <span class="string">"Minor Mark-Compact"</span>;</span><br><span class="line">    <span class="keyword">case</span> START:</span><br><span class="line">      <span class="keyword">return</span> (short_name) ? <span class="string">"st"</span> : <span class="string">"Start"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="string">"Unknown Event Type"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p><img src="http://schacker.lijundong.com/scavenge-cheny.png" alt="scavenge-cheny"></p>
-<h4 id="scavenge-cheny算法"><a href="#scavenge-cheny算法" class="headerlink" title="scavenge-cheny算法"></a>scavenge-cheny算法</h4><ol>
+<p><img src="http://schacker.lijundong.com/scavenge-cheney.png" alt="scavenge-cheney"></p>
+<h4 id="scavenge-cheney算法"><a href="#scavenge-cheney算法" class="headerlink" title="scavenge-cheney算法"></a>scavenge-cheney算法</h4><ol>
 <li>当活跃区满了或主动GC，<code>from</code>会有两个操作，且都是在经过标记后，一个清除经过标记后的非存活对象，另一个复制经过标记后存活对象到<code>to</code></li>
 <li>交换<code>from</code>和<code>to</code></li>
 <li>交换中如果有存活对象经过清道夫标记后标记数<code>&gt;1</code>，或当前<code>to</code>区域占比超过<code>25%</code>，则直接进入<code>old_space</code></li>
@@ -412,7 +412,7 @@
 <li>循环标记若干次（2-7）</li>
 <li>清理掉非白色的对象。</li>
 </ol>
-<p>简单来说，<code>Mark-sweep</code> 就是把从根节点无法获取到的对象清理掉，与<code>scavenge-cheny</code>相比，<code>scavenge-cheny</code>只会复制存活对象，而新内存中本身就小，且存活对象不多，所以高效。<code>mark-sweep</code>则只会清除没被标记的对象，而老生代死对象少，这也就是<code>mark-sweep</code>针对老生代区域高效GC的原因。</p>
+<p>简单来说，<code>Mark-sweep</code> 就是把从根节点无法获取到的对象清理掉，与<code>scavenge-cheney</code>相比，<code>scavenge-cheney</code>只会复制存活对象，而新内存中本身就小，且存活对象不多，所以高效。<code>mark-sweep</code>则只会清除没被标记的对象，而老生代死对象少，这也就是<code>mark-sweep</code>针对老生代区域高效GC的原因。</p>
 <h4 id="mark-compact-标记整理和压缩"><a href="#mark-compact-标记整理和压缩" class="headerlink" title="mark-compact 标记整理和压缩"></a><code>mark-compact</code> 标记整理和压缩</h4><p>由于经过<code>mark-sweep</code>算法GC后，会出现不连续的空间，导致空间碎片，当下次需要移动大对象或对象晋升，但没有足够的空间使用，将会再次导致GC，但往往这个时候GC没必要的，因为很可能是刚刚GC过，所以怎么合理利用空间碎片就成了性能关键。于是<code>mark-compact</code>算法出现了。</p>
 <ol>
 <li>将存活对象移动到<code>old_space</code>的一端</li>
@@ -428,7 +428,7 @@
 <h4 id="首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><a href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）" class="headerlink" title="首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）"></a>首先认识下<code>Chrome DevTools</code>内存模块（当前静态内存分布，时刻）</h4><ul>
 <li>准备好 <code>Chrome</code>，然后执行下面的代码</li>
 </ul>
-<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeClass</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(super)&#123;</span><br><span class="line">    <span class="keyword">this</span>.super()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeFangClass</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>()&#123;</span><br><span class="line">    <span class="keyword">this</span>.fang = <span class="keyword">new</span> BeikeClass()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> array = <span class="keyword">new</span> <span class="built_in">Array</span>(<span class="number">100000</span>).fill(<span class="string">''</span>).map(<span class="function"><span class="params">item</span> =&gt;</span> &#123;<span class="keyword">new</span> BeikeFangClass()&#125;)</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeClass</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>()&#123;&#125; <span class="comment">//没有构造函数效果一样</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeFangClass</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>()&#123;</span><br><span class="line">    <span class="keyword">this</span>.fang = <span class="keyword">new</span> BeikeClass()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> array = <span class="keyword">new</span> <span class="built_in">Array</span>(<span class="number">100000</span>).fill(<span class="string">''</span>).map(<span class="function"><span class="params">item</span> =&gt;</span> <span class="keyword">new</span> BeikeFangClass())</span><br></pre></td></tr></table></figure>
 <ul>
 <li>打开<code>Chrome devtools</code>，进入<code>memory</code></li>
 </ul>
@@ -587,10 +587,10 @@
       
         <ul class="sidebar-nav motion-element">
           <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            Table of Contents
+            Inhaltsverzeichnis
           </li>
           <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            Overview
+            Übersicht
           </li>
         </ul>
       
@@ -611,7 +611,7 @@
                 <a href="/archives/">
               
                   <span class="site-state-item-count">17</span>
-                  <span class="site-state-item-name">posts</span>
+                  <span class="site-state-item-name">Artikel</span>
                 </a>
               </div>
             
@@ -624,7 +624,7 @@
               <div class="site-state-item site-state-tags">
                 
                   <span class="site-state-item-count">2</span>
-                  <span class="site-state-item-name">tags</span>
+                  <span class="site-state-item-name">Tags</span>
                 
               </div>
             
@@ -656,7 +656,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#node-v8-内存一二三"><span class="nav-number">1.</span> <span class="nav-text">node v8 内存一二三</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">1.1.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#V8-内存构成（以下研究基于node-8-x-版本依赖的v8版本）"><span class="nav-number">1.2.</span> <span class="nav-text">V8 内存构成（以下研究基于node 8.x 版本依赖的v8版本）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一个-V8-进程的内存通常由以下几个块构成："><span class="nav-number">1.2.1.</span> <span class="nav-text">一个 V8 进程的内存通常由以下几个块构成：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存分布"><span class="nav-number">1.2.2.</span> <span class="nav-text">内存分布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#v8内存生命周期"><span class="nav-number">1.2.3.</span> <span class="nav-text">v8内存生命周期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#scavenge-cheny算法"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">scavenge-cheny算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mark-sweep标记清扫"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">mark-sweep标记清扫</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mark-compact-标记整理和压缩"><span class="nav-number">1.2.3.3.</span> <span class="nav-text">mark-compact 标记整理和压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#incremental-marking"><span class="nav-number">1.2.3.4.</span> <span class="nav-text">incremental-marking</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理论于实践的意义"><span class="nav-number">1.2.4.</span> <span class="nav-text">理论于实践的意义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><span class="nav-number">1.2.4.1.</span> <span class="nav-text">首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline"><span class="nav-number">1.2.4.2.</span> <span class="nav-text">怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么分析内存爆了？谁爆了？"><span class="nav-number">1.2.4.3.</span> <span class="nav-text">怎么分析内存爆了？谁爆了？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#node环境怎么操作？"><span class="nav-number">1.2.4.4.</span> <span class="nav-text">node环境怎么操作？</span></a></li></ol></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#node-v8-内存一二三"><span class="nav-number">1.</span> <span class="nav-text">node v8 内存一二三</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">1.1.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#V8-内存构成（以下研究基于node-8-x-版本依赖的v8版本）"><span class="nav-number">1.2.</span> <span class="nav-text">V8 内存构成（以下研究基于node 8.x 版本依赖的v8版本）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一个-V8-进程的内存通常由以下几个块构成："><span class="nav-number">1.2.1.</span> <span class="nav-text">一个 V8 进程的内存通常由以下几个块构成：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存分布"><span class="nav-number">1.2.2.</span> <span class="nav-text">内存分布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#v8内存生命周期"><span class="nav-number">1.2.3.</span> <span class="nav-text">v8内存生命周期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#scavenge-cheney算法"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">scavenge-cheney算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mark-sweep标记清扫"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">mark-sweep标记清扫</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mark-compact-标记整理和压缩"><span class="nav-number">1.2.3.3.</span> <span class="nav-text">mark-compact 标记整理和压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#incremental-marking"><span class="nav-number">1.2.3.4.</span> <span class="nav-text">incremental-marking</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理论于实践的意义"><span class="nav-number">1.2.4.</span> <span class="nav-text">理论于实践的意义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><span class="nav-number">1.2.4.1.</span> <span class="nav-text">首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline"><span class="nav-number">1.2.4.2.</span> <span class="nav-text">怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么分析内存爆了？谁爆了？"><span class="nav-number">1.2.4.3.</span> <span class="nav-text">怎么分析内存爆了？谁爆了？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#node环境怎么操作？"><span class="nav-number">1.2.4.4.</span> <span class="nav-text">node环境怎么操作？</span></a></li></ol></li></ol></li></ol></li></ol></div>
             
 
           </div>
@@ -686,7 +686,7 @@
 </div>
 
 
-  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+  <div class="powered-by">Erstellt mit  <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
 
 
 
