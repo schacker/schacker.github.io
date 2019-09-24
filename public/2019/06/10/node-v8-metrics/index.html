@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="node_v8_metrics">
+<meta property="og:url" content="http://yoursite.com/2019/06/10/node-v8-metrics/index.html">
+<meta property="og:site_name" content="菜鸟的逆袭">
+<meta property="og:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
+<meta property="og:image" content="http://schacker.lijundong.com/node-metrics.png">
+<meta property="og:image" content="http://schacker.lijundong.com/scavenge-cheny.png">
+<meta property="og:image" content="http://schacker.lijundong.com/scavenge-mark-before.png">
+<meta property="og:image" content="http://schacker.lijundong.com/scavenge-marki%1Dn%1Dg.png">
+<meta property="og:image" content="http://schacker.lijundong.com/scavenge-gc-done.png">
+<meta property="og:image" content="http://schacker.lijundong.com/mark-sweep-before.png">
+<meta property="og:image" content="http://schacker.lijundong.com/mark-sweep-after.png">
+<meta property="og:image" content="http://schacker.lijundong.com/mark-compact-clear.png">
+<meta property="og:image" content="http://schacker.lijundong.com/compare-diff.png">
+<meta property="og:image" content="http://schacker.lijundong.com/heapshot.png.jpeg">
+<meta property="og:image" content="http://schacker.lijundong.com/performance4.png.jpeg">
+<meta property="og:image" content="http://schacker.lijundong.com/dom-gc.jpeg">
+<meta property="og:image" content="http://schacker.lijundong.com/minor-gc.jpeg">
+<meta property="og:image" content="http://schacker.lijundong.com/call-tree.jpeg">
+<meta property="og:image" content="http://schacker.lijundong.com/event-log.jpeg">
+<meta property="og:image" content="http://schacker.lijundong.com/compare-heapshot.jpeg">
+<meta property="og:image" content="http://schacker.lijundong.com/compare-heapshot7-8.jpeg">
+<meta property="og:image" content="http://schacker.lijundong.com/object-tail.jpeg">
+<meta property="og:image" content="http://schacker.lijundong.com/heapsnapshot-create.png">
+<meta property="og:image" content="http://schacker.lijundong.com/heapsnapshot-diff6.png">
+<meta property="og:image" content="http://schacker.lijundong.com/node-trace_gc.png">
+<meta property="og:image" content="http://schacker.lijundong.com/allocation_gc_jsstack_trace.png">
+<meta property="og:image" content="http://schacker.lijundong.com/allocation_Buffer.png">
+<meta property="og:image" content="http://schacker.lijundong.com/memwatch_stats_inc.png">
+<meta property="og:updated_time" content="2019-06-30T09:54:13.020Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="node_v8_metrics">
+<meta name="twitter:description" content="node v8 内存一二三基础知识 Node.js 进程的内存管理，都是有V8自动处理的，包括内存分配和释放。  在V8内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。  回收是一个过程性的，从快速GC到最后的Full GC，是需要一段时间的。另外，Full GC是有触发阈值的，所以可能会出现内存长期占用在一个高值，">
+<meta name="twitter:image" content="http://schacker.lijundong.com/node-metrics.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/06/10/node-v8-metrics/"/>
+
+
+
+
+
+  <title>node_v8_metrics | 菜鸟的逆袭</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">菜鸟的逆袭</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/10/node-v8-metrics/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">node_v8_metrics</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-06-10T10:19:06+08:00">
+                2019-06-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="node-v8-内存一二三"><a href="#node-v8-内存一二三" class="headerlink" title="node v8 内存一二三"></a>node v8 内存一二三</h1><h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><ul>
+<li><p>Node.js 进程的内存管理，都是有<code>V8</code>自动处理的，包括内存分配和释放。</p>
+</li>
+<li><p>在<code>V8</code>内部，会为程序中的所有变量构建一个图，来表示变量间的关联关系，当变量从根节点无法触达时，就意味着这个变量不会再被使用了，即可回收。</p>
+</li>
+<li><p>回收是一个过程性的，从快速<code>GC</code>到最后的<code>Full GC</code>，是需要一段时间的。另外，<code>Full GC</code>是有触发阈值的，所以可能会出现内存长期占用在一个高值，也可以算是一种内存泄漏。还有一种就是引用不释放，导致无法进入<code>GC</code>环节，并且一直产生新的占用，这一般会发生在<code>Javascript</code>业务层面。</p>
+</li>
+<li><p>定位内存泄漏，找有引用但不被使用</p>
+</li>
+</ul>
+<h2 id="V8-内存构成（以下研究基于node-8-x-版本依赖的v8版本）"><a href="#V8-内存构成（以下研究基于node-8-x-版本依赖的v8版本）" class="headerlink" title="V8 内存构成（以下研究基于node 8.x 版本依赖的v8版本）"></a><code>V8</code> 内存构成（以下研究基于<code>node 8.x</code> 版本依赖的v8版本）</h2><h3 id="一个-V8-进程的内存通常由以下几个块构成："><a href="#一个-V8-进程的内存通常由以下几个块构成：" class="headerlink" title="一个 V8 进程的内存通常由以下几个块构成："></a>一个 <code>V8</code> 进程的内存通常由以下几个块构成：</h3><p>Heap内存分配枚举</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// <span class="doctag">NOTE:</span> SpaceIterator depends on AllocationSpace enumeration values being</span></span><br><span class="line"><span class="comment">// consecutive.</span></span><br><span class="line"><span class="comment">// Keep this enum in sync with the ObjectSpace enum in v8.h</span></span><br><span class="line"><span class="keyword">enum</span> AllocationSpace &#123;</span><br><span class="line">  NEW_SPACE,   <span class="comment">// Semispaces collected with copying collector.</span></span><br><span class="line">  OLD_SPACE,   <span class="comment">// May contain pointers to new space.</span></span><br><span class="line">  CODE_SPACE,  <span class="comment">// No pointers to new space, marked executable.</span></span><br><span class="line">  MAP_SPACE,   <span class="comment">// Only and all map objects.</span></span><br><span class="line">  LO_SPACE,    <span class="comment">// Promoted large objects.</span></span><br><span class="line"></span><br><span class="line">  FIRST_SPACE = NEW_SPACE,</span><br><span class="line">  LAST_SPACE = LO_SPACE,</span><br><span class="line">  FIRST_PAGED_SPACE = OLD_SPACE,</span><br><span class="line">  LAST_PAGED_SPACE = MAP_SPACE</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>node-v8</code> 暴露模块</p>
+<ul>
+<li>新生代内存区（<code>new_space</code>）<ul>
+<li>大多数的对象都会被分配在这里，区域很小但是垃圾回收比较频繁，由两个半区域(<code>semispace</code>)构成</li>
+</ul>
+</li>
+<li>老生代内存区（<code>old_space</code>）<ul>
+<li>属于老生代，存放从新生代晋升而来的对象，可能包含对<code>new space</code>的引用，<code>GC</code>频率低，按照<code>GC</code> <code>1.4GB</code>至少要<code>50ms</code>以上，非增量更是<code>1s</code>以上。</li>
+</ul>
+</li>
+<li>大对象区（<code>large_object_space</code>）<ul>
+<li>这里存放体积超越其他区大小的对象，每个对象有自己的内存，垃圾回收其不会移动大对象区</li>
+</ul>
+</li>
+<li>代码区（<code>code_space</code>）<ul>
+<li>代码对象，会被分配在这里，无引用。唯一拥有执行权限的内存</li>
+</ul>
+</li>
+<li>map 区（<code>map_space</code>）<ul>
+<li>存放 <code>Cell</code> 和 <code>Map</code>，每个区域都是存放相同大小的元素，结构简单</li>
+</ul>
+</li>
+</ul>
+<p>Heap内存计算</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">size_t</span> Heap::Capacity() &#123;</span><br><span class="line">  <span class="keyword">if</span> (!HasBeenSetUp()) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> new_space_-&gt;Capacity() + OldGenerationCapacity();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">size_t</span> Heap::OldGenerationCapacity() &#123;</span><br><span class="line">  <span class="keyword">if</span> (!HasBeenSetUp()) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> old_space_-&gt;Capacity() + code_space_-&gt;Capacity() +</span><br><span class="line">         map_space_-&gt;Capacity() + lo_space_-&gt;SizeOfObjects();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>从上面代码可以看出<code>v8</code>整个<code>heap</code>内存容器大小即<code>新生代</code>+<code>老生代</code>+<code>代码区</code>+<code>map区</code>+<code>大对象区</code></li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Heap::heap()</span><br><span class="line">  :...</span><br><span class="line">  <span class="comment">// semispace_size_ should be a power of 2 and old_generation_size_ should</span></span><br><span class="line">  <span class="comment">// be a multiple of Page::kPageSize.</span></span><br><span class="line">  max_semi_space_size_(<span class="number">8</span> * (kPointerSize / <span class="number">4</span>) * MB),</span><br><span class="line">  initial_semispace_size_(MB),</span><br><span class="line">  max_old_generation_size_(<span class="number">700u</span>l * (kPointerSize / <span class="number">4</span>) * MB),</span><br><span class="line">  initial_max_old_generation_size_(max_old_generation_size_),</span><br><span class="line">  initial_old_generation_size_(max_old_generation_size_ /</span><br><span class="line">                                kInitalOldGenerationLimitFactor),</span><br><span class="line">  old_generation_size_configured_(<span class="literal">false</span>), <span class="comment">//是否配置老生代内存上限</span></span><br><span class="line">  ...</span><br><span class="line"><span class="comment">// heap.h 头文件申明</span></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> kInitalOldGenerationLimitFactor = <span class="number">2</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>上面代码中，看到几个关键信息：<ul>
+<li><code>max_semi_space_size_</code>，<code>kPointerSize</code>是指的当前系统的当前编译器的<code>sizeof(void*)</code>大小，即指针大小，<code>64bits</code>系统通常为 <code>8</code>，<code>32bits</code> 通常为 <code>4</code>，笔者电脑测试为<code>16MB</code></li>
+<li><code>initial_semispace_size_</code> 即<code>semi_sapce_size</code>初始为<code>1MB</code></li>
+<li><code>max_old_generation_size_</code> 按照上面计算方法得出<code>1400MB</code></li>
+<li><code>initial_max_old_generation_size_</code> 即<code>max_old_generation_size_</code>大小，如果后续有启动参数配置则为配置大小如 <code>node --max-old-space-size=2000 xxx.js</code>，表示将最大老生代内存设置为<code>2000MB</code></li>
+<li><code>initial_old_generation_size_</code> 同理可得到为最大老生代内存的一半</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Returns the maximum amount of memory reserved for the heap.</span></span><br><span class="line"><span class="keyword">size_t</span> MaxReserved() &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">2</span> * max_semi_space_size_ + max_old_generation_size_;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>该函数获得当前系统当前编译器中最大的<code>heap</code>内存，通过计算为<code>1432MB</code>，笔记通过API实时调用能看到也是<code>1432MB</code>，可通过<code>v8</code>提供的<code>getHeapStatistics()</code>函数拿到<code>heap_size_limit</code>就是我们<code>heap</code>内存最大上限。</li>
+</ul>
+<h3 id="内存分布"><a href="#内存分布" class="headerlink" title="内存分布"></a>内存分布</h3><p><img src="http://schacker.lijundong.com/node-metrics.png" alt="内存分布"></p>
+<p>内存模块中通常分为已申请区、使用区、可使用区等。<code>new_space</code>则分为激活区、未激活区。</p>
+<p>以下通过三个API获取的当前系统及程序内存环境数据，笔者已换算成<code>MB</code></p>
+<ul>
+<li><code>process.memoryUsage()</code></li>
+<li><code>v8.getHeapStatistics()</code></li>
+<li><code>v8.getHeapSpaceStatistics()</code></li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"code"</span>: <span class="number">100000</span>,</span><br><span class="line">  <span class="attr">"data"</span>: &#123;</span><br><span class="line">    <span class="attr">"memoryUsage"</span>: &#123;</span><br><span class="line">      <span class="attr">"rss"</span>: <span class="number">217</span>,</span><br><span class="line">      <span class="attr">"heapTotal"</span>: <span class="number">181</span>,</span><br><span class="line">      <span class="attr">"heapUsed"</span>: <span class="number">152</span>,</span><br><span class="line">      <span class="attr">"external"</span>: <span class="number">11</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"HeapStatistics"</span>: &#123;</span><br><span class="line">      <span class="attr">"total_heap_size"</span>: <span class="number">181</span>,</span><br><span class="line">      <span class="attr">"total_heap_size_executable"</span>: <span class="number">10</span>,</span><br><span class="line">      <span class="attr">"total_physical_size"</span>: <span class="number">179</span>,</span><br><span class="line">      <span class="attr">"total_available_size"</span>: <span class="number">1260</span>,</span><br><span class="line">      <span class="attr">"used_heap_size"</span>: <span class="number">152</span>,</span><br><span class="line">      <span class="attr">"heap_size_limit"</span>: <span class="number">1432</span>,</span><br><span class="line">      <span class="attr">"malloced_memory"</span>: <span class="number">1</span>,</span><br><span class="line">      <span class="attr">"peak_malloced_memory"</span>: <span class="number">11</span>,</span><br><span class="line">      <span class="attr">"does_zap_garbage"</span>: <span class="number">0</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"HeapSpaceStatistics"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"space_name"</span>: <span class="string">"new_space"</span>,</span><br><span class="line">        <span class="attr">"space_size"</span>: <span class="number">32</span>,</span><br><span class="line">        <span class="attr">"space_used_size"</span>: <span class="number">8</span>,</span><br><span class="line">        <span class="attr">"space_available_size"</span>: <span class="number">9</span>,</span><br><span class="line">        <span class="attr">"physical_space_size"</span>: <span class="number">32</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"space_name"</span>: <span class="string">"old_space"</span>,</span><br><span class="line">        <span class="attr">"space_size"</span>: <span class="number">88</span>,</span><br><span class="line">        <span class="attr">"space_used_size"</span>: <span class="number">86</span>,</span><br><span class="line">        <span class="attr">"space_available_size"</span>: <span class="number">2</span>,</span><br><span class="line">        <span class="attr">"physical_space_size"</span>: <span class="number">88</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"space_name"</span>: <span class="string">"code_space"</span>,</span><br><span class="line">        <span class="attr">"space_size"</span>: <span class="number">9</span>,</span><br><span class="line">        <span class="attr">"space_used_size"</span>: <span class="number">8</span>,</span><br><span class="line">        <span class="attr">"space_available_size"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"physical_space_size"</span>: <span class="number">9</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"space_name"</span>: <span class="string">"map_space"</span>,</span><br><span class="line">        <span class="attr">"space_size"</span>: <span class="number">3</span>,</span><br><span class="line">        <span class="attr">"space_used_size"</span>: <span class="number">3</span>,</span><br><span class="line">        <span class="attr">"space_available_size"</span>: <span class="number">1</span>,</span><br><span class="line">        <span class="attr">"physical_space_size"</span>: <span class="number">3</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"space_name"</span>: <span class="string">"large_object_space"</span>,</span><br><span class="line">        <span class="attr">"space_size"</span>: <span class="number">50</span>,</span><br><span class="line">        <span class="attr">"space_used_size"</span>: <span class="number">49</span>,</span><br><span class="line">        <span class="attr">"space_available_size"</span>: <span class="number">1250</span>,</span><br><span class="line">        <span class="attr">"physical_space_size"</span>: <span class="number">50</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"msg"</span>: <span class="string">"metrics"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="v8内存生命周期"><a href="#v8内存生命周期" class="headerlink" title="v8内存生命周期"></a>v8内存生命周期</h3><p>假设当前有一个变量<code>house</code>，从创建到销毁过程大致过程如下。</p>
+<ol>
+<li><p>这个对象被分配到了 <code>new_space</code></p>
+</li>
+<li><p>随着程序的运行，<code>new_space</code> 塞满了，<code>GC</code> 开始清理 <code>new_space</code> 里的<code>死</code>对象，<code>house</code> 因为还处于活跃状态，所以没被清理出去<code>GC</code></p>
+</li>
+<li><p>清理了两遍 <code>new_space</code>，发现 <code>house</code> 依然还活跃着，就把 <code>house</code> 移动到了 <code>old_space</code></p>
+</li>
+<li><p>随着程序的运行，<code>old_space</code> 也塞满了，<code>GC</code> 开始清理 <code>old_space</code>，这时候发现 <code>house</code> 已经没有被引用了，就把 <code>house</code> 给清理出去了，如果一直引用，则不会被清理</p>
+</li>
+</ol>
+<p>第二步里，清理 <code>new_space</code> 的过程叫做 <code>Scavenge</code>（不是胡说八道，证据在下面），即空间换时间，我们把<code>new_space</code>分为激活和未激活两个半（<code>semi</code>）区域，则过程如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//heap.h</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// Returns the timer used for a given GC type.</span></span><br><span class="line"><span class="comment">// - GCScavenger: young generation GC</span></span><br><span class="line"><span class="comment">// - GCCompactor: full GC</span></span><br><span class="line"><span class="comment">// - GCFinalzeMC: finalization of incremental full GC</span></span><br><span class="line"><span class="comment">// - GCFinalizeMCReduceMemory: finalization of incremental full GC with</span></span><br><span class="line"><span class="comment">// memory reduction</span></span><br><span class="line">HistogramTimer* Heap::GCTypeTimer(GarbageCollector collector) &#123;</span><br><span class="line">  <span class="keyword">if</span> (IsYoungGenerationCollector(collector)) &#123;</span><br><span class="line">    <span class="keyword">return</span> isolate_-&gt;counters()-&gt;gc_scavenger();</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (!incremental_marking()-&gt;IsStopped()) &#123;</span><br><span class="line">      <span class="keyword">if</span> (ShouldReduceMemory()) &#123;</span><br><span class="line">        <span class="keyword">return</span> isolate_-&gt;counters()-&gt;gc_finalize_reduce_memory();</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> isolate_-&gt;counters()-&gt;gc_finalize();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> isolate_-&gt;counters()-&gt;gc_compactor();</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 是否是新生代收集器</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">bool</span> <span class="title">IsYoungGenerationCollector</span><span class="params">(GarbageCollector collector)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> collector == SCAVENGER || collector == MINOR_MARK_COMPACTOR;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> GarbageCollector <span class="title">YoungGenerationCollector</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> (FLAG_minor_mc) ? MINOR_MARK_COMPACTOR : SCAVENGER;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//gc-tracer.cc</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">char</span>* GCTracer::Event::TypeName(<span class="keyword">bool</span> short_name) <span class="keyword">const</span> &#123;</span><br><span class="line">  <span class="keyword">switch</span> (type) &#123;</span><br><span class="line">    <span class="keyword">case</span> SCAVENGER:</span><br><span class="line">      <span class="keyword">return</span> (short_name) ? <span class="string">"s"</span> : <span class="string">"Scavenge"</span>;</span><br><span class="line">    <span class="keyword">case</span> MARK_COMPACTOR:</span><br><span class="line">    <span class="keyword">case</span> INCREMENTAL_MARK_COMPACTOR:</span><br><span class="line">      <span class="keyword">return</span> (short_name) ? <span class="string">"ms"</span> : <span class="string">"Mark-sweep"</span>;</span><br><span class="line">    <span class="keyword">case</span> MINOR_MARK_COMPACTOR:</span><br><span class="line">      <span class="keyword">return</span> (short_name) ? <span class="string">"mmc"</span> : <span class="string">"Minor Mark-Compact"</span>;</span><br><span class="line">    <span class="keyword">case</span> START:</span><br><span class="line">      <span class="keyword">return</span> (short_name) ? <span class="string">"st"</span> : <span class="string">"Start"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="string">"Unknown Event Type"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="http://schacker.lijundong.com/scavenge-cheny.png" alt="scavenge-cheney"></p>
+<h4 id="scavenge-cheney算法"><a href="#scavenge-cheney算法" class="headerlink" title="scavenge-cheney算法"></a>scavenge-cheney算法</h4><ol>
+<li>当活跃区满了或主动GC，<code>from</code>会有两个操作，且都是在经过标记后，一个清除经过标记后的非存活对象，另一个复制经过标记后存活对象到<code>to</code></li>
+<li>交换<code>from</code>和<code>to</code></li>
+<li>交换中如果有存活对象经过清道夫标记后标记数<code>&gt;1</code>，或当前<code>to</code>区域占比超过<code>25%</code>，则直接进入<code>old_space</code></li>
+</ol>
+<h4 id="mark-sweep标记清扫"><a href="#mark-sweep标记清扫" class="headerlink" title="mark-sweep标记清扫"></a>mark-sweep标记清扫</h4><p>第四步里，清理 <code>old_space</code> 的过程叫做 <code>Mark-sweep</code>，也就是标记和清扫，这块占用内存很大，所以没有使用 <code>Scavenge</code>，这个回收过程包含了若干次(2-7次)标记过程和清理过程：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// full GC</span></span><br><span class="line"><span class="keyword">void</span> Heap::CollectAllAvailableGarbage(GarbageCollectionReason gc_reason) &#123;</span><br><span class="line">  <span class="comment">// Since we are ignoring the return value, the exact choice of space does</span></span><br><span class="line">  <span class="comment">// not matter, so long as we do not specify NEW_SPACE, which would not</span></span><br><span class="line">  <span class="comment">// cause a full GC.</span></span><br><span class="line">  <span class="comment">// Major GC would invoke weak handle callbacks on weakly reachable</span></span><br><span class="line">  <span class="comment">// handles, but won't collect weakly reachable objects until next</span></span><br><span class="line">  <span class="comment">// major GC.  Therefore if we collect aggressively and weak handle callback</span></span><br><span class="line">  <span class="comment">// has been invoked, we rerun major GC to release objects which become</span></span><br><span class="line">  <span class="comment">// garbage.</span></span><br><span class="line">  <span class="comment">// Note: as weak callbacks can execute arbitrary code, we cannot</span></span><br><span class="line">  <span class="comment">// hope that eventually there will be no weak callbacks invocations.</span></span><br><span class="line">  <span class="comment">// Therefore stop recollecting after several attempts.</span></span><br><span class="line">  <span class="keyword">if</span> (gc_reason == GarbageCollectionReason::kLastResort) &#123;</span><br><span class="line">    InvokeOutOfMemoryCallback();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function">RuntimeCallTimerScope <span class="title">runtime_timer</span><span class="params">(</span></span></span><br><span class="line">      isolate(), &amp;RuntimeCallStats::GC_Custom_AllAvailableGarbage);</span><br><span class="line">  <span class="keyword">if</span> (isolate()-&gt;concurrent_recompilation_enabled()) &#123;</span><br><span class="line">    <span class="comment">// The optimizing compiler may be unnecessarily holding on to memory.</span></span><br><span class="line">    DisallowHeapAllocation no_recursive_gc;</span><br><span class="line">    isolate()-&gt;optimizing_compile_dispatcher()-&gt;Flush(</span><br><span class="line">        OptimizingCompileDispatcher::BlockingBehavior::kDontBlock);</span><br><span class="line">  &#125;</span><br><span class="line">  isolate()-&gt;ClearSerializerData();</span><br><span class="line">  set_current_gc_flags(kMakeHeapIterableMask | kReduceMemoryFootprintMask);</span><br><span class="line">  isolate_-&gt;compilation_cache()-&gt;Clear();</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">int</span> kMaxNumberOfAttempts = <span class="number">7</span>;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">int</span> kMinNumberOfAttempts = <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> attempt = <span class="number">0</span>; attempt &lt; kMaxNumberOfAttempts; attempt++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!CollectGarbage(OLD_SPACE, gc_reason,</span><br><span class="line">                        v8::kGCCallbackFlagCollectAllAvailableGarbage) &amp;&amp;</span><br><span class="line">        attempt + <span class="number">1</span> &gt;= kMinNumberOfAttempts) &#123;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  set_current_gc_flags(kNoGCFlags);</span><br><span class="line">  new_space_-&gt;Shrink();</span><br><span class="line">  UncommitFromSpace();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>把当前 <code>内存数据抽象为森林</code>，如下<br><img src="http://schacker.lijundong.com/scavenge-mark-before.png" alt="mark-sweep"></p>
+<p>清理后<br><img src="http://schacker.lijundong.com/scavenge-marki%1Dn%1Dg.png" alt="mark-sweep"><br><img src="http://schacker.lijundong.com/scavenge-gc-done.png" alt="mark-sweep"></p>
+<ol>
+<li>标记从根可达的对象为白色</li>
+<li>遍历白色对象的邻接对象，直到所有可到对象都标记为白色</li>
+<li>循环标记若干次（2-7）</li>
+<li>清理掉非白色的对象。</li>
+</ol>
+<p>简单来说，<code>Mark-sweep</code> 就是把从根节点无法获取到的对象清理掉，与<code>scavenge-cheney</code>相比，<code>scavenge-cheney</code>只会复制存活对象，而新内存中本身就小，且存活对象不多，所以高效。<code>mark-sweep</code>则只会清除没被标记的对象，而老生代死对象少，这也就是<code>mark-sweep</code>针对老生代区域高效GC的原因。</p>
+<h4 id="mark-compact-标记整理和压缩"><a href="#mark-compact-标记整理和压缩" class="headerlink" title="mark-compact 标记整理和压缩"></a><code>mark-compact</code> 标记整理和压缩</h4><p>由于经过<code>mark-sweep</code>算法GC后，会出现不连续的空间，导致空间碎片，当下次需要移动大对象或对象晋升，但没有足够的空间使用，将会再次导致GC，但往往这个时候GC没必要的，因为很可能是刚刚GC过，所以怎么合理利用空间碎片就成了性能关键。于是<code>mark-compact</code>算法出现了。</p>
+<ol>
+<li>将存活对象移动到<code>old_space</code>的一端</li>
+<li>将另一端直接清空</li>
+</ol>
+<p>整理之前（黑色为死对象）<br><img src="http://schacker.lijundong.com/mark-sweep-before.png" alt="整理之前"></p>
+<p>整理之后<br><img src="http://schacker.lijundong.com/mark-sweep-after.png" alt="整理之后"><br><img src="http://schacker.lijundong.com/mark-compact-clear.png" alt="整理之后"></p>
+<p>我们对比下三种GC算法</p>
+<p><img src="http://schacker.lijundong.com/compare-diff.png" alt="GC算法对比"></p>
+<h4 id="incremental-marking"><a href="#incremental-marking" class="headerlink" title="incremental-marking"></a><code>incremental-marking</code></h4><p>由于GC期间，需要执行<code>stop-the-world</code>来保证应用程序逻辑和GC看到的一致性，所以v8中引入了<code>incremental-marking</code>增量标记策略，清理一会儿，执行一会儿应用程序。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> Heap::ReportExternalMemoryPressure() &#123;</span><br><span class="line">  <span class="keyword">const</span> GCCallbackFlags kGCCallbackFlagsForExternalMemory =</span><br><span class="line">      <span class="keyword">static_cast</span>&lt;GCCallbackFlags&gt;(</span><br><span class="line">          kGCCallbackFlagSynchronousPhantomCallbackProcessing |</span><br><span class="line">          kGCCallbackFlagCollectAllExternalMemory);</span><br><span class="line">  <span class="keyword">if</span> (external_memory_ &gt;</span><br><span class="line">      (external_memory_at_last_mark_compact_ + external_memory_hard_limit())) &#123;</span><br><span class="line">    CollectAllGarbage(</span><br><span class="line">        kReduceMemoryFootprintMask | kFinalizeIncrementalMarkingMask,</span><br><span class="line">        GarbageCollectionReason::kExternalMemoryPressure,</span><br><span class="line">        <span class="keyword">static_cast</span>&lt;GCCallbackFlags&gt;(kGCCallbackFlagCollectAllAvailableGarbage |</span><br><span class="line">                                     kGCCallbackFlagsForExternalMemory));</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (incremental_marking()-&gt;IsStopped()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (incremental_marking()-&gt;CanBeActivated()) &#123;</span><br><span class="line">      StartIncrementalMarking(i::Heap::kNoGCFlags,</span><br><span class="line">                              GarbageCollectionReason::kExternalMemoryPressure,</span><br><span class="line">                              kGCCallbackFlagsForExternalMemory);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      CollectAllGarbage(i::Heap::kNoGCFlags,</span><br><span class="line">                        GarbageCollectionReason::kExternalMemoryPressure,</span><br><span class="line">                        kGCCallbackFlagsForExternalMemory);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">// Incremental marking is turned on an has already been started.</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> kMinStepSize = <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> kMaxStepSize = <span class="number">10</span>;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> ms_step =</span><br><span class="line">        Min(kMaxStepSize,</span><br><span class="line">            Max(kMinStepSize, <span class="keyword">static_cast</span>&lt;<span class="keyword">double</span>&gt;(external_memory_) /</span><br><span class="line">                                  external_memory_limit_ * kMinStepSize));</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">double</span> deadline = MonotonicallyIncreasingTimeInMs() + ms_step;</span><br><span class="line">    <span class="comment">// Extend the gc callback flags with external memory flags.</span></span><br><span class="line">    current_gc_callback_flags_ = <span class="keyword">static_cast</span>&lt;GCCallbackFlags&gt;(</span><br><span class="line">        current_gc_callback_flags_ | kGCCallbackFlagsForExternalMemory);</span><br><span class="line">    incremental_marking()-&gt;AdvanceIncrementalMarking(</span><br><span class="line">        deadline, IncrementalMarking::GC_VIA_STACK_GUARD,</span><br><span class="line">        IncrementalMarking::FORCE_COMPLETION, StepOrigin::kV8);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="理论于实践的意义"><a href="#理论于实践的意义" class="headerlink" title="理论于实践的意义"></a>理论于实践的意义</h3><p>注：本文Chrome调试部分基于版本（Version <code>74.0.3729.169</code> (Official Build) (64-bit)）</p>
+<h4 id="首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><a href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）" class="headerlink" title="首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）"></a>首先认识下<code>Chrome DevTools</code>内存模块（当前静态内存分布，时刻）</h4><ul>
+<li>准备好 <code>Chrome</code>，然后执行下面的代码</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeClass</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>()&#123;&#125; <span class="comment">//没有构造函数效果一样</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeFangClass</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>()&#123;</span><br><span class="line">    <span class="keyword">this</span>.fang = <span class="keyword">new</span> BeikeClass()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> array = <span class="keyword">new</span> <span class="built_in">Array</span>(<span class="number">100000</span>).fill(<span class="string">''</span>).map(<span class="function"><span class="params">item</span> =&gt;</span> <span class="keyword">new</span> BeikeFangClass())</span><br></pre></td></tr></table></figure>
+<ul>
+<li>打开<code>Chrome devtools</code>，进入<code>memory</code></li>
+</ul>
+<p><img src="http://schacker.lijundong.com/heapshot.png.jpeg" alt="内存堆快照"></p>
+<p>介绍下几个tab:</p>
+<ul>
+<li><code>Constructor</code>为构造函数</li>
+<li><code>Distance</code>为对象到根层级</li>
+<li><code>Shallow Size</code>为对象自己内存大小（不包含内部引用）</li>
+<li><code>Retained Size</code>为对象内存总大小且包含内部引用对象大小</li>
+</ul>
+<p>上面经过过滤后会看到申明的两个类 <code>BeikeClass</code>、<code>BeikeFangClass</code>，可以看到 <code>BeikeFangClass</code>(6)下一层级有 <code>BeikeClass</code>(7)，而且 <code>2400000+3200000=5600000</code> 也符合上面对 <code>Shallow Size</code>和 <code>Retained Size</code>的解释（瞎解释？，<a href="https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101" target="_blank" rel="noopener">官网走你</a>）</p>
+<p>注：<code>Retained Size</code> 是性能调优阶段重要指标（主动<code>GC</code>）</p>
+<h4 id="怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline"><a href="#怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline" class="headerlink" title="怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline"></a>怎么样才能看到内存在涨呢？看个动态的<code>Performance</code>之前叫<code>Timeline</code></h4><p><img src="http://schacker.lijundong.com/performance4.png.jpeg" alt="`Performance`"></p>
+<p>看，这里的<code>波动图</code>就能看到内存在涨。怎么操作？执行下面的代码</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> x = [];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">grow</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>; i &lt; <span class="number">10000</span>; i++) &#123;</span><br><span class="line">    <span class="built_in">document</span>.body.appendChild(<span class="built_in">document</span>.createElement(<span class="string">'div'</span>));</span><br><span class="line">  &#125;</span><br><span class="line">  x.push(<span class="keyword">new</span> <span class="built_in">Array</span>(<span class="number">1000000</span>).join(<span class="string">'x'</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">document</span>.getElementById(<span class="string">'grow'</span>).addEventListener(<span class="string">'click'</span>, grow);</span><br></pre></td></tr></table></figure>
+<p>然后点击开始记录当前时刻开始一段时间内的内存使用情况，下面仔细看下这20s左右内存使用情况：</p>
+<ul>
+<li><p>首先主动<code>GC</code>一次，能看到内存有所下降，也就是图中标注的第一次（<code>Major GC</code>，其中可能包含一到多次<code>Minor GC</code>），<code>Major GC</code>通常是针对老生代、<code>Minor GC</code>通常针对新生代，那也就意味着<code>Major</code>通常比<code>Minor</code>慢，因为老生代内存比新生代内存大很多，算法也不相同。</p>
+</li>
+<li><p>中间红色框标记的为向文档中插入<code>10000</code>个DOM，可以看到<code>js heap</code>有增长</p>
+</li>
+<li><p>后续每次插入<code>10000</code>DOM，都能看到明显的<code>js heap</code>增长，同时还有<code>nodes</code>增长</p>
+</li>
+<li><p>在随着DOM原来越多，系统会自动触发<code>DOM GC</code>，尝试回收无用DOM，以及<code>Minor GC</code><br><img src="http://schacker.lijundong.com/dom-gc.jpeg" alt="DOM GC"><br><img src="http://schacker.lijundong.com/minor-gc.jpeg" alt="Minor GC"></p>
+</li>
+<li><p>最后一次主动GC后内存也明显下降了</p>
+</li>
+<li><p>我们还可以点击下方的 <code>Call tree</code> 来查看整个过程的调用树，我们能看到除<code>Major GC</code>、<code>Minor GC</code>、<code>DOM GC</code>之外的其他相关系统调用栈及具体信息<br><img src="http://schacker.lijundong.com/call-tree.jpeg" alt="Call Tree"></p>
+</li>
+<li><p>通过<code>Event Log</code>查看根据时间系统调用栈<br><img src="http://schacker.lijundong.com/event-log.jpeg" alt="`Event Log`"></p>
+</li>
+</ul>
+<h4 id="怎么分析内存爆了？谁爆了？"><a href="#怎么分析内存爆了？谁爆了？" class="headerlink" title="怎么分析内存爆了？谁爆了？"></a>怎么分析内存爆了？谁爆了？</h4><p>那我们模拟一个泄漏的例子，模拟内存增长：</p>
+<ul>
+<li><p>打开 <code>memory</code>，然后执行下面的代码，每隔一段时间录制一段 <code>HEAP SNAPSHOTS</code>，然后做两两对比</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeClass</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>()&#123;</span><br><span class="line">    <span class="keyword">this</span>.fang = <span class="keyword">new</span> <span class="built_in">ArrayBuffer</span>(<span class="number">1000000</span>)  </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> _heap = &#123;&#125;</span><br><span class="line"></span><br><span class="line">setInterval(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  _heap[<span class="built_in">Date</span>.now()] = <span class="keyword">new</span> BeikeClass()</span><br><span class="line">&#125;, <span class="number">100</span>)</span><br></pre></td></tr></table></figure>
+<p><img src="http://schacker.lijundong.com/compare-heapshot.jpeg" alt="`多次HEAP SNAPSHOTS`"></p>
+</li>
+<li><p>对于上面的图来说，我们的首先选中其中一个<code>SNAPSHOTS</code>比如<code>SNAPSHOTS 7</code>，然后修改<code>Summary-&gt;Comparison</code>，右侧选中<code>SNAPSHOTS 7</code>作对比，我们看到右侧红色框中<code>new</code>中比较多，也是我们需要关注的。</p>
+</li>
+<li><p>重复上面的过程，选择对比<code>SNAPSHOTS 8</code>与<code>SNAPSHOTS 7</code>，同样能得到一个对比<br><img src="http://schacker.lijundong.com/compare-heapshot7-8.jpeg" alt="二次对比"></p>
+</li>
+<li><p>对比两张图，可以看到两次对比中<code>BeikeClass</code>、<code>ArrayBuffer</code>、<code>string</code>等几项都明显增长，我们点击三角展开就能定位变量最终引用比如这里的<code>ArrayBuffer</code>，点开后<code>fang in BeikeiClass</code>-<code>1560244861634</code>-<code>_heap</code>，及最终引用链（官网叫支配项）</p>
+</li>
+<li><p>查看对象引用关系</p>
+<p><img src="http://schacker.lijundong.com/object-tail.jpeg" alt="对象引用"></p>
+</li>
+</ul>
+<p>最终我们也就能定位到是<code>BeikeClass</code>、<code>ArrayBuffer</code>、<code>string</code>几个可能是‘<code>凶手</code>’，从而破案。</p>
+<h4 id="node环境怎么操作？"><a href="#node环境怎么操作？" class="headerlink" title="node环境怎么操作？"></a>node环境怎么操作？</h4><p><code>node</code>环境下结合<code>node-heapdump</code>和自己监听内存使用情况或使用<code>node-memwatch</code></p>
+<ul>
+<li><code>node-memwatch</code>监听当前程序(V8实例)的<code>GC</code>事件，然后会触发<code>leak</code>和<code>stats</code>事件，<code>leak</code>是在内存泄漏时候会触发，<code>stats</code>是在<code>GC</code>后触发，上报数据</li>
+</ul>
+<p>如果遇到<code>node-memwatch</code>编译报错</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">no matching <span class="keyword">constructor</span> for initialization of 'String::Utf8Value'</span><br><span class="line">candidate <span class="keyword">constructor</span> not viable: requires 1 argument, but 2 were provided</span><br></pre></td></tr></table></figure>
+<p>修复方法两个：<code>node</code>升级到<code>9</code>以上或者修改源码，上面笔者说本文基于<code>8.x</code>，所以这里只能改源码了</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">String::Utf8Value utfString(isolate, str-&gt;ToString());</span><br></pre></td></tr></table></figure>
+<p>删除<code>utfString</code>第一个参数即可（别问为什么，问就是看源码）</p>
+<p>笔者这里有一段代码示例，（我们在启动的时候可以加上 <code>--trace_gc</code> 参数来观察运行过程中的详细<code>GC</code>信息）</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeFang</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>()&#123;</span><br><span class="line">    <span class="keyword">this</span>.stamp = <span class="built_in">Date</span>.now()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BeikeINF</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>()&#123;</span><br><span class="line">    <span class="keyword">this</span>.list = <span class="keyword">new</span> BeikeFang()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 每个10ms向GC_VARS数组push一个&#123;class: new BeikeINF()&#125;</span></span><br><span class="line">global.GC_VARS = []</span><br><span class="line"><span class="keyword">const</span> timer = setInterval(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">var</span> GC_VAR = &#123;<span class="attr">class</span>: <span class="keyword">new</span> BeikeINF()&#125;</span><br><span class="line">  global.GC_VARS.push(GC_VAR)</span><br><span class="line">&#125;, <span class="number">10</span>);</span><br><span class="line">setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">  clearInterval(timer)</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'clear'</span>)</span><br><span class="line">&#125;, <span class="number">100000</span>);</span><br></pre></td></tr></table></figure>
+<p>在<code>clear</code>之前然后每隔一段时间生成<code>heapsnapshot</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> filename = <span class="string">'./'</span> + <span class="built_in">Date</span>.now() + <span class="string">'.heapsnapshot'</span></span><br><span class="line">heapdump.writeSnapshot(filename, <span class="function"><span class="keyword">function</span>(<span class="params">a, b</span>)</span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'succ filename'</span>, b)</span><br><span class="line">  filename = b</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>下面生成了6个快照</p>
+<p><img src="http://schacker.lijundong.com/heapsnapshot-create.png" alt="6个heapsnapshot"></p>
+<p>导入Chrome-&gt;memory分析</p>
+<p><img src="http://schacker.lijundong.com/heapsnapshot-diff6.png" alt="6个heapsnapshot diff"><br>上图中能明显看到内存是增长趋势，按照之前描述的方法进行分析对比就能知道是那块变量出现问题</p>
+<p>我们可以使用<code>memwatch</code>提供的<code>diff</code>方法进行对应两个时间点的<code>snapshot</code>的<code>diff</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> hd = <span class="keyword">new</span> memwatch.HeapDiff();</span><br><span class="line"><span class="keyword">let</span> diff = <span class="literal">null</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">sleep</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function">(<span class="params">resolve, reject</span>) =&gt;</span> &#123;</span><br><span class="line">    setTimeout(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">      diff = hd.end()</span><br><span class="line">      resolve(diff)</span><br><span class="line">    &#125;, <span class="number">5000</span>);</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br><span class="line">diff = <span class="keyword">await</span> sleep()</span><br><span class="line">ctx.ajax(diff, &#123;</span><br><span class="line">  error: <span class="literal">false</span>,</span><br><span class="line">  message: <span class="string">'heap diff'</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>下面是利用<code>HeapDiff</code>类生成的<code>diff</code>结果</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  before: &#123;</span><br><span class="line">    nodes: 447998,</span><br><span class="line">    size_bytes: 52876240,</span><br><span class="line">    size: "50.43 mb"</span><br><span class="line">  &#125;,</span><br><span class="line">  after: &#123;</span><br><span class="line">    nodes: 447670,</span><br><span class="line">    size_bytes: 52568136,</span><br><span class="line">    size: "50.13 mb"</span><br><span class="line">  &#125;,</span><br><span class="line">  change: &#123;</span><br><span class="line">    size_bytes: -308104,</span><br><span class="line">    size: "-300.88 kb",</span><br><span class="line">    freed_nodes: 1975,</span><br><span class="line">    allocated_nodes: 1543,</span><br><span class="line">    details: [&#123;</span><br><span class="line">      what: "Arguments",</span><br><span class="line">      size_bytes: -64,</span><br><span class="line">      size: "-64 bytes",</span><br><span class="line">      +: 0,</span><br><span class="line">      -: 2</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Array",</span><br><span class="line">      size_bytes: -41432,</span><br><span class="line">      size: "-40.46 kb",</span><br><span class="line">      +: 102,</span><br><span class="line">      -: 631</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "BeikeFang",</span><br><span class="line">      size_bytes: 14112,</span><br><span class="line">      size: "13.78 kb",</span><br><span class="line">      +: 441,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "BeikeINF",</span><br><span class="line">      size_bytes: 14112,</span><br><span class="line">      size: "13.78 kb",</span><br><span class="line">      +: 441,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Buffer",</span><br><span class="line">      size_bytes: -80,</span><br><span class="line">      size: "-80 bytes",</span><br><span class="line">      +: 0,</span><br><span class="line">      -: 1</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "BufferList",</span><br><span class="line">      size_bytes: 48,</span><br><span class="line">      size: "48 bytes",</span><br><span class="line">      +: 1,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Closure",</span><br><span class="line">      size_bytes: 720,</span><br><span class="line">      size: "720 bytes",</span><br><span class="line">      +: 16,</span><br><span class="line">      -: 3</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Code",</span><br><span class="line">      size_bytes: -282656,</span><br><span class="line">      size: "-276.03 kb",</span><br><span class="line">      +: 15,</span><br><span class="line">      -: 392</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "FSReqWrap",</span><br><span class="line">      size_bytes: -32,</span><br><span class="line">      size: "-32 bytes",</span><br><span class="line">      +: 0,</span><br><span class="line">      -: 1</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Native",</span><br><span class="line">      size_bytes: 344,</span><br><span class="line">      size: "344 bytes",</span><br><span class="line">      +: 6,</span><br><span class="line">      -: 1</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Number",</span><br><span class="line">      size_bytes: -16,</span><br><span class="line">      size: "-16 bytes",</span><br><span class="line">      +: 0,</span><br><span class="line">      -: 1</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Object",</span><br><span class="line">      size_bytes: 14288,</span><br><span class="line">      size: "13.95 kb",</span><br><span class="line">      +: 445,</span><br><span class="line">      -: 2</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Promise",</span><br><span class="line">      size_bytes: 384,</span><br><span class="line">      size: "384 bytes",</span><br><span class="line">      +: 4,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "PromiseWrap",</span><br><span class="line">      size_bytes: 192,</span><br><span class="line">      size: "192 bytes",</span><br><span class="line">      +: 4,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "ReadableState",</span><br><span class="line">      size_bytes: 192,</span><br><span class="line">      size: "192 bytes",</span><br><span class="line">      +: 1,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Socket",</span><br><span class="line">      size_bytes: 248,</span><br><span class="line">      size: "248 bytes",</span><br><span class="line">      +: 1,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "String",</span><br><span class="line">      size_bytes: -8856,</span><br><span class="line">      size: "-8.65 kb",</span><br><span class="line">      +: 1,</span><br><span class="line">      -: 212</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "TCP",</span><br><span class="line">      size_bytes: 32,</span><br><span class="line">      size: "32 bytes",</span><br><span class="line">      +: 1,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "TickObject",</span><br><span class="line">      size_bytes: -128,</span><br><span class="line">      size: "-128 bytes",</span><br><span class="line">      +: 0,</span><br><span class="line">      -: 2</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Timeout",</span><br><span class="line">      size_bytes: 176,</span><br><span class="line">      size: "176 bytes",</span><br><span class="line">      +: 1,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "Timer",</span><br><span class="line">      size_bytes: 32,</span><br><span class="line">      size: "32 bytes",</span><br><span class="line">      +: 1,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "TimersList",</span><br><span class="line">      size_bytes: 72,</span><br><span class="line">      size: "72 bytes",</span><br><span class="line">      +: 1,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "WritableState",</span><br><span class="line">      size_bytes: 224,</span><br><span class="line">      size: "224 bytes",</span><br><span class="line">      +: 1,</span><br><span class="line">      -: 0</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">      what: "system / Context",</span><br><span class="line">      size_bytes: 56,</span><br><span class="line">      size: "56 bytes",</span><br><span class="line">      +: 3,</span><br><span class="line">      -: 2</span><br><span class="line">    &#125;]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从diff的结果看，明显看到</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  what: "BeikeFang",</span><br><span class="line">  size_bytes: 14112,</span><br><span class="line">  size: "13.78 kb",</span><br><span class="line">  +: 441,</span><br><span class="line">  -: 0</span><br><span class="line">&#125;,</span><br><span class="line">&#123;</span><br><span class="line">  what: "BeikeINF",</span><br><span class="line">  size_bytes: 14112,</span><br><span class="line">  size: "13.78 kb",</span><br><span class="line">  +: 441,</span><br><span class="line">  -: 0</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>那我们还可以进行进一步的<code>diff</code>，继续采用这种方式进行选择<code>diff</code>，最终确认内存爆掉的凶手</p>
+<h4 id="在node中查看GC数据"><a href="#在node中查看GC数据" class="headerlink" title="在node中查看GC数据"></a>在<code>node</code>中查看<code>GC</code>数据</h4><p>上面一节中说到了通过添加<code>--trace_gc</code>来查看运行过程中详细的<code>GC</code>数据</p>
+<p><img src="http://schacker.lijundong.com/node-trace_gc.png" alt="node-trace_gc"></p>
+<ul>
+<li>我们重点关注这里的红框部分，左边的是通过<code>memwatch.stats</code>函数监听得到的数据（后续会讲），右边的是通过启动参数得到的<code>GC</code>算法。能看到前面说的<code>Mark-sweep</code>、<code>scavenge</code>两个算法，针对老生代和新生代。</li>
+</ul>
+<h4 id="内存使用"><a href="#内存使用" class="headerlink" title="内存使用"></a>内存使用</h4><ul>
+<li><p>作用域</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> foo = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">  <span class="keyword">let</span> inner = &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的代码foo函数没执行一次，都会生成一个foo的函数作用域，同时foo的局部变量也在函数作用域中，执行结束函数作用域也随之销毁，局部变量亦然。局部变量存活周期很短，会首先分配到新生代的From区域，函数执行结束后，也就被GC掉了。</p>
+</li>
+<li><p>作用域链</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> foo1 = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">  <span class="keyword">const</span> foo2 = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">let</span> inner_var = <span class="number">1</span></span><br><span class="line">    <span class="keyword">return</span> (<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">      <span class="keyword">return</span> inner_var</span><br><span class="line">    &#125;())</span><br><span class="line">  &#125;</span><br><span class="line">  foo2()</span><br><span class="line">&#125;</span><br><span class="line">foo1()</span><br></pre></td></tr></table></figure>
+<p>上面的代码<code>foo1</code>在执行的时候，首先生成<code>foo1</code>的<code>Function Scope</code>，然后进入foo2的<code>Function Scope</code>，到里面的闭包中，<code>return inner_var</code>时，闭包的<code>Function Scope</code>里没有<code>inner_var</code>，然后找foo2的<code>Function Scope</code>，找到了其中的局部变量，然后返回。这里的如果foo2里作用域没有<code>inner_var</code>则再向上找，直到<code>global Scope</code>。</p>
+</li>
+<li><p>主动释放变量</p>
+<p>根据前面讲到的<code>GC</code>原则，我们在编码的时候要注意主动释放不用的内存变量。全局上的变量是整个APP生命周期可访问，所以这部分的变量会很快放到老生代，所以如果有未使用的或用过后不再使用的变量，及时释放。对于局部变量而言，v8本身的GC就够用了，除非手抖搞成了全局的。释放变量可通过<code>delete</code>或重新赋值。</p>
+</li>
+</ul>
+<h4 id="查看内存数据"><a href="#查看内存数据" class="headerlink" title="查看内存数据"></a>查看内存数据</h4><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 显示内存</span></span><br><span class="line"><span class="keyword">const</span> showMem = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> mem = process.memoryUsage();</span><br><span class="line">  <span class="keyword">const</span> format = <span class="function"><span class="keyword">function</span>(<span class="params">bytes</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (bytes / <span class="number">1024</span> / <span class="number">1024</span>).toFixed(<span class="number">2</span>) + <span class="string">' MB'</span>;</span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'Process: heapTotal '</span> + format(mem.heapTotal) + <span class="string">' heapUsed '</span> + format(mem.heapUsed) + <span class="string">' rss '</span> + format(mem.rss));</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'---------------------------------------------------------------------------'</span>);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 不停分配内存但不释放</span></span><br><span class="line"><span class="keyword">const</span> useMem = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> size = <span class="number">20</span> * <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line">  <span class="keyword">const</span> arr = <span class="keyword">new</span> <span class="built_in">Array</span>(size);</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; size; i++) &#123;</span><br><span class="line">    arr[i] = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> arr;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">const</span> total = [];</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> j = <span class="number">0</span>; j &lt; <span class="number">15</span>; j++) &#123;</span><br><span class="line">  showMem();</span><br><span class="line">  total.push(useMem());</span><br><span class="line">&#125;</span><br><span class="line">showMem();</span><br></pre></td></tr></table></figure>
+<p><img src="http://schacker.lijundong.com/allocation_gc_jsstack_trace.png" alt="程序down"></p>
+<p>第一个红框内：我们看到上面的分配内存只执行了9次，v8内存就爆了，<code>heapTotal 1437.03 MB heapUsed 1352.93 MB rss 1377.70 MB</code>第九次中，申请的heap内存总共<code>1437.03MB</code>，已使用<code>1352.93MB</code>，常驻内存<code>1377.70MB</code>，在第十次分配中就爆了。<br>第二个红框内：我们看到相关的<code>GC</code>数据，在第九次后尝试<code>GC</code>老生代内存失败。<br>第三个红框内：v8内存爆掉，进程down，给出了相关的<code>js stack trace</code>，我们可以明确看到<code>useMem</code>就是凶手。</p>
+<p>当然这个时候再访问系统也就GG了。</p>
+<h4 id="堆外存"><a href="#堆外存" class="headerlink" title="堆外存"></a>堆外存</h4><p>在上面我们用<code>Array</code>发现其分配内存是在v8的<code>heap</code>中，<code>Buffer</code>则不会通过v8来分配，是<code>Node</code>自己处理分配的，我们把<code>useMem</code>换成<code>Buffer</code>再看一遍</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> useMem = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> size = <span class="number">200</span> * <span class="number">1024</span> * <span class="number">1024</span>;</span><br><span class="line">  <span class="keyword">const</span> arr = Buffer.alloc(size);</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; size; i++) &#123;</span><br><span class="line">    arr[i] = <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> arr;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><img src="http://schacker.lijundong.com/allocation_Buffer.png" alt="分配后的增量GC"><br><img src="http://schacker.lijundong.com/memwatch_stats_inc.png" alt="分配中常驻内存"></p>
+<p>这里我们执行了20次，执行后有多次的<code>full_gc</code>，还有多次的<code>inc_gc</code>，分配很频繁，前面也说到了，v8的GC原则中，在很频繁触发GC的时候会采用<code>inc_gc</code>也就是增量的，这样保证程序能及时响应我们请求。而且我们看到总堆内存和使用堆内存变化并不大，最大的就是常驻内存变化一直增加，这也就说明<code>Buffer</code>在node环境中不是通过v8的分规则进行分配的，我们在适当的时候也可以用这种方法突破v8的限制，当然我们也可以使用前面说的通过<code>--max-old-space-size</code>参数启动的时候指定。</p>
+<p>我们可以看下对应的<code>leak</code>事件中的数据，其中包含事件开始时间和结束时间（<code>NODE_UNIXTIME_V8</code>类型），在五次<code>GC</code>过程中内存增长了（字节），这里只有内存（疑似）泄漏，没有详细的原因说明</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  start: 2019-06-28T06:06:53.000Z,</span><br><span class="line">  end: 2019-06-28T06:07:05.000Z,</span><br><span class="line">  growth: 584568,</span><br><span class="line">  reason: 'heap growth over 5 consecutive GCs (12s) - 167.25 mb/hr'</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以按照上面讲的<code>Comparison</code>方式来对比我们泄漏前和泄漏后的堆内存变化，看那些增长明显</p>
+<p>不过需要注意：我们在<code>leak</code>事件里不能主动结束<code>HeapDiff()</code>的<code>end()</code>，在<code>leak</code>会提前结束，所以我们还是在<code>leak</code>里手动生成<code>heapsnapshot</code>比较靠谱。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/01/08/我是怎样搞定webpack4静态资源的/" rel="next" title="我是怎样搞定webpack4静态资源的">
+                <i class="fa fa-chevron-left"></i> 我是怎样搞定webpack4静态资源的
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">schacker</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#node-v8-内存一二三"><span class="nav-number">1.</span> <span class="nav-text">node v8 内存一二三</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#基础知识"><span class="nav-number">1.1.</span> <span class="nav-text">基础知识</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#V8-内存构成（以下研究基于node-8-x-版本依赖的v8版本）"><span class="nav-number">1.2.</span> <span class="nav-text">V8 内存构成（以下研究基于node 8.x 版本依赖的v8版本）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一个-V8-进程的内存通常由以下几个块构成："><span class="nav-number">1.2.1.</span> <span class="nav-text">一个 V8 进程的内存通常由以下几个块构成：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存分布"><span class="nav-number">1.2.2.</span> <span class="nav-text">内存分布</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#v8内存生命周期"><span class="nav-number">1.2.3.</span> <span class="nav-text">v8内存生命周期</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#scavenge-cheney算法"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">scavenge-cheney算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mark-sweep标记清扫"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">mark-sweep标记清扫</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#mark-compact-标记整理和压缩"><span class="nav-number">1.2.3.3.</span> <span class="nav-text">mark-compact 标记整理和压缩</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#incremental-marking"><span class="nav-number">1.2.3.4.</span> <span class="nav-text">incremental-marking</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#理论于实践的意义"><span class="nav-number">1.2.4.</span> <span class="nav-text">理论于实践的意义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#首先认识下Chrome-DevTools内存模块（当前静态内存分布，时刻）"><span class="nav-number">1.2.4.1.</span> <span class="nav-text">首先认识下Chrome DevTools内存模块（当前静态内存分布，时刻）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline"><span class="nav-number">1.2.4.2.</span> <span class="nav-text">怎么样才能看到内存在涨呢？看个动态的Performance之前叫Timeline</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#怎么分析内存爆了？谁爆了？"><span class="nav-number">1.2.4.3.</span> <span class="nav-text">怎么分析内存爆了？谁爆了？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#node环境怎么操作？"><span class="nav-number">1.2.4.4.</span> <span class="nav-text">node环境怎么操作？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在node中查看GC数据"><span class="nav-number">1.2.4.5.</span> <span class="nav-text">在node中查看GC数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内存使用"><span class="nav-number">1.2.4.6.</span> <span class="nav-text">内存使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#查看内存数据"><span class="nav-number">1.2.4.7.</span> <span class="nav-text">查看内存数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#堆外存"><span class="nav-number">1.2.4.8.</span> <span class="nav-text">堆外存</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">schacker</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

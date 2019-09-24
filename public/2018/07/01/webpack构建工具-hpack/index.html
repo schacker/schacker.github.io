@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="webpack工具集成-babel polyfill runtime这里简单说下 转义BABEL的POLYFILL和RUNTIME的区别babel-polyfill 使用场景 Babel 默认只转换新的 JavaScript 语法，而不转换新的 API。例如，Iterator、Generator、Set、Maps、Proxy、Reflect、Symbol、Promise 等全局对象，以及一些定义在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="webpack构建工具-hpack">
+<meta property="og:url" content="http://yoursite.com/2018/07/01/webpack构建工具-hpack/index.html">
+<meta property="og:site_name" content="菜鸟的逆袭">
+<meta property="og:description" content="webpack工具集成-babel polyfill runtime这里简单说下 转义BABEL的POLYFILL和RUNTIME的区别babel-polyfill 使用场景 Babel 默认只转换新的 JavaScript 语法，而不转换新的 API。例如，Iterator、Generator、Set、Maps、Proxy、Reflect、Symbol、Promise 等全局对象，以及一些定义在">
+<meta property="og:updated_time" content="2018-07-04T02:13:08.179Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="webpack构建工具-hpack">
+<meta name="twitter:description" content="webpack工具集成-babel polyfill runtime这里简单说下 转义BABEL的POLYFILL和RUNTIME的区别babel-polyfill 使用场景 Babel 默认只转换新的 JavaScript 语法，而不转换新的 API。例如，Iterator、Generator、Set、Maps、Proxy、Reflect、Symbol、Promise 等全局对象，以及一些定义在">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/07/01/webpack构建工具-hpack/"/>
+
+
+
+
+
+  <title>webpack构建工具-hpack | 菜鸟的逆袭</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">菜鸟的逆袭</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/07/01/webpack构建工具-hpack/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="schacker">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="菜鸟的逆袭">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">webpack构建工具-hpack</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-07-01T17:36:40+08:00">
+                2018-07-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="webpack工具集成-babel-polyfill-runtime"><a href="#webpack工具集成-babel-polyfill-runtime" class="headerlink" title="webpack工具集成-babel polyfill runtime"></a>webpack工具集成-babel polyfill runtime</h1><h4 id="这里简单说下-转义BABEL的POLYFILL和RUNTIME的区别"><a href="#这里简单说下-转义BABEL的POLYFILL和RUNTIME的区别" class="headerlink" title="这里简单说下 转义BABEL的POLYFILL和RUNTIME的区别"></a>这里简单说下 <code>转义BABEL的POLYFILL和RUNTIME的区别</code></h4><p><code>babel-polyfill</code> 使用场景</p>
+<p><code>Babel</code> 默认只转换新的 <code>JavaScript</code> 语法，而不转换新的 API。例如，<code>Iterator、Generator、Set、Maps、Proxy、Reflect、Symbol、Promise</code> 等全局对象，以及一些定义在全局对象上的方法（比如 <code>Object.assign</code>）都不会转译。如果想使用这些新的对象和方法，必须使用 <code>babel-polyfill</code>，为当前环境提供一个垫片。</p>
+<p><code>babel-runtime</code> 使用场景</p>
+<p>Babel 转译后的代码要实现源代码同样的功能需要借助一些帮助函数，例如，<code>{ [name]: &#39;JavaScript&#39; }</code> 转译后的代码如下所示：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_defineProperty</span>(<span class="params">obj, key, value</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (key <span class="keyword">in</span> obj) &#123;</span><br><span class="line">    <span class="built_in">Object</span>.defineProperty(obj, key, &#123;</span><br><span class="line">      value: value,</span><br><span class="line">      enumerable: <span class="literal">true</span>,</span><br><span class="line">      configurable: <span class="literal">true</span>,</span><br><span class="line">      writable: <span class="literal">true</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    obj[key] = value;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> obj;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> obj = _defineProperty(&#123;&#125;, <span class="string">'name'</span>, <span class="string">'JavaScript'</span>);</span><br></pre></td></tr></table></figure>
+<p>类似上面的帮助函数 <code>_defineProperty</code> 可能会重复出现在一些模块里，导致编译后的代码体积变大。Babel 为了解决这个问题，提供了单独的包 babel-runtime 供编译模块复用工具函数。</p>
+<p>启用插件 <code>babel-plugin-transform-runtime</code> 后，<code>Babel</code> 就会使用 <code>babel-runtime</code> 下的工具函数，转译代码如下：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line"><span class="comment">// 之前的 `_defineProperty` 函数已经作为公共模块 `babel-runtime/helpers/defineProperty` 使用</span></span><br><span class="line"><span class="keyword">var</span> _defineProperty2 = <span class="built_in">require</span>(<span class="string">'babel-runtime/helpers/defineProperty'</span>);</span><br><span class="line"><span class="keyword">var</span> _defineProperty3 = _interopRequireDefault(_defineProperty2);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_interopRequireDefault</span>(<span class="params">obj</span>) </span>&#123; <span class="keyword">return</span> obj &amp;&amp; obj.__esModule ? obj : &#123; <span class="attr">default</span>: obj &#125;; &#125;</span><br><span class="line"><span class="keyword">var</span> obj = (<span class="number">0</span>, _defineProperty3.default)(&#123;&#125;, <span class="string">'name'</span>, <span class="string">'JavaScript'</span>);</span><br></pre></td></tr></table></figure>
+<p>除此之外，<code>babel</code> 还为源代码的非实例方法（<code>Object.assign</code>，实例方法是类似这样的 <code>&quot;foobar&quot;.includes(&quot;foo&quot;)</code>）和 <code>babel-runtime/helps</code> 下的工具函数自动引用了 <code>polyfill</code>。这样可以避免污染全局命名空间，非常适合于 JavaScript 库和工具包的实现。例如 <code>const obj = {}, Object.assign(obj, { age: 30 });</code> 转译后的代码如下所示：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">'use strict'</span>;</span><br><span class="line"><span class="comment">// 使用了 core-js 提供的 assign</span></span><br><span class="line"><span class="keyword">var</span> _assign = <span class="built_in">require</span>(<span class="string">'babel-runtime/core-js/object/assign'</span>);</span><br><span class="line"><span class="keyword">var</span> _assign2 = _interopRequireDefault(_assign);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">_interopRequireDefault</span>(<span class="params">obj</span>) </span>&#123; <span class="keyword">return</span> obj &amp;&amp; obj.__esModule ? obj : &#123; <span class="attr">default</span>: obj &#125;; &#125;</span><br><span class="line"><span class="keyword">var</span> obj = &#123;&#125;;</span><br><span class="line">(<span class="number">0</span>, _assign2.default)(obj, &#123;</span><br><span class="line">  age: <span class="number">30</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>思考：<code>babel-runtime</code> 为什么适合 <code>JavaScript</code> 库和工具包的实现？</p>
+<p>避免 babel 编译的工具函数在每个模块里重复出现，减小库和工具包的体积；</p>
+<p>在没有使用 <code>babel-runtime</code> 之前，库和工具包一般不会直接引入 <code>polyfill</code>。否则像 <code>Promise</code> 这样的全局对象会污染全局命名空间，这就要求库的使用者自己提供 <code>polyfill</code>。这些 <code>polyfill</code> 一般在库和工具的使用说明中会提到，比如很多库都会有要求提供 es5 的 <code>polyfill</code>。在使用 <code>babel-runtime</code> 后，库和工具只要在 <code>package.json</code> 中增加依赖 <code>babel-runtime</code>，交给 <code>babel-runtime</code> 去引入 <code>polyfill</code> 就行了；</p>
+<p>总结：</p>
+<p>具体项目还是需要使用 <code>babel-polyfill</code>，只使用babel的话，实例方法不能正常工作（例如 “foobar”.includes(“foo”)）；</p>
+<p><code>JavaScript</code> 库和工具可以使用 <code>babel-runtime</code>，在实际项目中使用这些库和工具，需要该项目本身提供 <code>polyfill</code></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/06/24/函数消抖与节流/" rel="next" title="函数消抖与节流">
+                <i class="fa fa-chevron-left"></i> 函数消抖与节流
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/07/27/rewrite与redirect区别/" rel="prev" title="rewrite与redirect区别">
+                rewrite与redirect区别 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">schacker</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">17</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">tags</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#webpack工具集成-babel-polyfill-runtime"><span class="nav-number">1.</span> <span class="nav-text">webpack工具集成-babel polyfill runtime</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#这里简单说下-转义BABEL的POLYFILL和RUNTIME的区别"><span class="nav-number">1.0.0.1.</span> <span class="nav-text">这里简单说下 转义BABEL的POLYFILL和RUNTIME的区别</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">schacker</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
